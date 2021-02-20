@@ -1,0 +1,594 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://Scripts/MapGeneration/MapGenerator.cs" type="Script" id=1]
+[ext_resource path="res://Resources/Fonts/GUI_Font.tres" type="DynamicFont" id=2]
+[ext_resource path="res://Scripts/Main.cs" type="Script" id=3]
+[ext_resource path="res://Scripts/Pointer.cs" type="Script" id=4]
+[ext_resource path="res://Resources/gui_theme.tres" type="Theme" id=5]
+
+[sub_resource type="SpatialMaterial" id=1]
+flags_transparent = true
+albedo_color = Color( 0.145098, 0.552941, 0.796078, 0.643137 )
+
+[sub_resource type="QuadMesh" id=2]
+material = SubResource( 1 )
+
+[sub_resource type="DynamicFontData" id=3]
+font_path = "res://Resources/Fonts/font.ttf"
+
+[sub_resource type="DynamicFont" id=4]
+size = 18
+font_data = SubResource( 3 )
+
+[sub_resource type="Theme" id=5]
+default_font = ExtResource( 2 )
+
+[sub_resource type="CubeMesh" id=6]
+size = Vector3( 0.05, 0.05, 0.05 )
+
+[sub_resource type="SpatialMaterial" id=7]
+flags_unshaded = true
+flags_vertex_lighting = true
+flags_no_depth_test = true
+flags_do_not_receive_shadows = true
+albedo_color = Color( 1, 0, 0, 1 )
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 3 )
+
+[node name="MapGenerator" type="Node" parent="."]
+script = ExtResource( 1 )
+_meshPath = NodePath("../TestMesh")
+_seedNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/SeedInput")
+_widthNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/MapWidthSpinBox")
+_heightNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/MapHeightSpinBox")
+_tesselationNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/TesselationSpinBox")
+_minNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/MinAmplitudeSpinBox")
+_maxNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/MaxAmplitudeSpinBox")
+_scaleNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/ScaleSpinBox")
+_persistenceNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox/PersistenceSlider")
+_octavesNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox/OctavesSlider")
+_lacunarityNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/LacunaritySpinBox")
+_allowNegativeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/AllowNegativeCheckBox")
+_correctionTypeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/FunctionalCorrectionOptionButton")
+
+[node name="NoiseMapMiniMap" type="TextureRect" parent="."]
+size_flags_horizontal = 12
+size_flags_vertical = 12
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.845448, 0.310478, -0.434535, 0, 0.813649, 0.581356, 0.534057, -0.491507, 0.687898, 0, -5.78528, 0 )
+shadow_enabled = true
+
+[node name="TestMesh" type="MeshInstance" parent="."]
+
+[node name="WaterMesh" type="MeshInstance" parent="TestMesh"]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 0, 0 )
+visible = false
+mesh = SubResource( 2 )
+material/0 = null
+
+[node name="GUI" type="VBoxContainer" parent="."]
+anchor_left = 0.8
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+theme = ExtResource( 5 )
+alignment = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TabContainer" type="TabContainer" parent="GUI"]
+modulate = Color( 1, 1, 1, 0.784314 )
+margin_right = 288.0
+margin_bottom = 437.0
+size_flags_vertical = 3
+custom_fonts/font = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Map" type="CenterContainer" parent="GUI/TabContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 40.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/TabContainer/Map"]
+margin_right = 280.0
+margin_bottom = 393.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource( 5 )
+custom_constants/separation = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MapParametersGrid" type="GridContainer" parent="GUI/TabContainer/Map/VBoxContainer"]
+margin_right = 280.0
+margin_bottom = 336.0
+columns = 2
+
+[node name="MapWidthLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 5.0
+margin_right = 130.0
+margin_bottom = 27.0
+custom_fonts/font = ExtResource( 2 )
+text = "Map Width"
+
+[node name="MapWidthSpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_right = 280.0
+margin_bottom = 32.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 10.0
+value = 20.0
+align = 1
+
+[node name="MapHeightLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 41.0
+margin_right = 130.0
+margin_bottom = 63.0
+custom_fonts/font = ExtResource( 2 )
+text = "Map Height"
+
+[node name="MapHeightSpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 36.0
+margin_right = 280.0
+margin_bottom = 68.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 10.0
+value = 20.0
+align = 1
+
+[node name="TesselationLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 77.0
+margin_right = 130.0
+margin_bottom = 99.0
+custom_fonts/font = ExtResource( 2 )
+text = "Tesselation"
+
+[node name="TesselationSpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 72.0
+margin_right = 280.0
+margin_bottom = 104.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 1.0
+max_value = 20.0
+value = 3.0
+align = 1
+
+[node name="MinAmplitudeLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 113.0
+margin_right = 130.0
+margin_bottom = 135.0
+custom_fonts/font = ExtResource( 2 )
+text = "Min Amplitude"
+
+[node name="MinAmplitudeSpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 108.0
+margin_right = 280.0
+margin_bottom = 140.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = -10.0
+max_value = 10.0
+step = 0.5
+align = 1
+suffix = "m"
+
+[node name="MaxAmplitudeLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 149.0
+margin_right = 130.0
+margin_bottom = 171.0
+custom_fonts/font = ExtResource( 2 )
+text = "Max Amplitude"
+
+[node name="MaxAmplitudeSpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 144.0
+margin_right = 280.0
+margin_bottom = 176.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = -10.0
+max_value = 10.0
+step = 0.5
+value = 3.0
+align = 1
+suffix = "m"
+
+[node name="ScaleLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 185.0
+margin_right = 130.0
+margin_bottom = 207.0
+custom_fonts/font = ExtResource( 2 )
+text = "Scale"
+
+[node name="ScaleSpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 180.0
+margin_right = 280.0
+margin_bottom = 212.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 0.01
+max_value = 1.0
+step = 0.01
+value = 0.1
+align = 1
+prefix = "x"
+
+[node name="PersistenceLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 216.0
+margin_right = 130.0
+margin_bottom = 238.0
+custom_fonts/font = ExtResource( 2 )
+text = "Persistence"
+
+[node name="PersistenceHBox" type="HBoxContainer" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 216.0
+margin_right = 280.0
+margin_bottom = 238.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PersistenceSlider" type="HSlider" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox"]
+margin_right = 92.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 0.01
+max_value = 1.0
+step = 0.01
+value = 0.5
+
+[node name="PersistenceValueLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox"]
+margin_left = 96.0
+margin_right = 146.0
+margin_bottom = 22.0
+rect_min_size = Vector2( 50, 0 )
+custom_fonts/font = ExtResource( 2 )
+text = "0.50"
+align = 1
+valign = 1
+
+[node name="OctavesLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 242.0
+margin_right = 130.0
+margin_bottom = 264.0
+custom_fonts/font = ExtResource( 2 )
+text = "Octaves"
+
+[node name="OctavesHBox" type="HBoxContainer" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 242.0
+margin_right = 280.0
+margin_bottom = 264.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="OctavesSlider" type="HSlider" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox"]
+margin_right = 92.0
+margin_bottom = 16.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 1.0
+max_value = 9.0
+value = 4.0
+
+[node name="OctavesValueLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox"]
+margin_left = 96.0
+margin_right = 146.0
+margin_bottom = 22.0
+rect_min_size = Vector2( 50, 0 )
+custom_fonts/font = ExtResource( 2 )
+text = "4"
+align = 1
+valign = 1
+
+[node name="LacunarityLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 273.0
+margin_right = 130.0
+margin_bottom = 295.0
+custom_fonts/font = ExtResource( 2 )
+text = "Lacunarity"
+
+[node name="LacunaritySpinBox" type="SpinBox" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 268.0
+margin_right = 280.0
+margin_bottom = 300.0
+size_flags_horizontal = 3
+theme = ExtResource( 5 )
+min_value = 0.1
+max_value = 10.0
+step = 0.1
+value = 2.0
+align = 1
+
+[node name="RandomSeedLabel" type="Label" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_top = 309.0
+margin_right = 130.0
+margin_bottom = 331.0
+custom_fonts/font = ExtResource( 2 )
+text = "Random Seed"
+
+[node name="SeedInput" type="LineEdit" parent="GUI/TabContainer/Map/VBoxContainer/MapParametersGrid"]
+margin_left = 134.0
+margin_top = 304.0
+margin_right = 280.0
+margin_bottom = 336.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SeedHint" type="Label" parent="GUI/TabContainer/Map/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0.462745 )
+margin_top = 346.0
+margin_right = 280.0
+margin_bottom = 393.0
+custom_fonts/font = ExtResource( 2 )
+text = "Note: empty line would mean random seed"
+align = 1
+valign = 1
+autowrap = true
+
+[node name="Advanced" type="CenterContainer" parent="GUI/TabContainer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 40.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/TabContainer/Advanced"]
+margin_left = 36.0
+margin_top = 122.0
+margin_right = 244.0
+margin_bottom = 270.0
+custom_constants/separation = 10
+
+[node name="ShowWaterCheckBox" type="CheckBox" parent="GUI/TabContainer/Advanced/VBoxContainer"]
+margin_right = 190.0
+margin_bottom = 25.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+pressed = true
+text = "Show Water"
+align = 1
+
+[node name="ShowNoisePreviewCheckBox" type="CheckBox" parent="GUI/TabContainer/Advanced/VBoxContainer"]
+margin_top = 35.0
+margin_right = 190.0
+margin_bottom = 60.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+text = "Show Noise Minimap"
+align = 1
+
+[node name="AllowNegativeCheckBox" type="CheckBox" parent="GUI/TabContainer/Advanced/VBoxContainer"]
+margin_top = 70.0
+margin_right = 190.0
+margin_bottom = 95.0
+size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
+text = "Allow Negative"
+align = 1
+
+[node name="FunctionalCorrectionOptionButton" type="OptionButton" parent="GUI/TabContainer/Advanced/VBoxContainer"]
+margin_top = 105.0
+margin_right = 190.0
+margin_bottom = 128.0
+text = "Noise Correction"
+align = 1
+
+[node name="System" type="CenterContainer" parent="GUI/TabContainer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 40.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="GridContainer" type="GridContainer" parent="GUI/TabContainer/System"]
+margin_top = 162.0
+margin_right = 323.0
+margin_bottom = 230.0
+columns = 2
+
+[node name="ParallelNumLabel" type="Label" parent="GUI/TabContainer/System/GridContainer"]
+margin_top = 5.0
+margin_right = 126.0
+margin_bottom = 22.0
+custom_fonts/font = ExtResource( 2 )
+text = "Parallel Tasks"
+
+[node name="ParallelNumSpinBox" type="SpinBox" parent="GUI/TabContainer/System/GridContainer"]
+margin_left = 130.0
+margin_right = 297.0
+margin_bottom = 27.0
+min_value = 1.0
+max_value = 16.0
+value = 1.0
+align = 1
+
+[node name="MemoryMapLabel" type="Label" parent="GUI/TabContainer/System/GridContainer"]
+margin_top = 36.0
+margin_right = 126.0
+margin_bottom = 53.0
+custom_fonts/font = ExtResource( 2 )
+text = "Max Memory"
+
+[node name="MemoryHBox" type="HBoxContainer" parent="GUI/TabContainer/System/GridContainer"]
+margin_left = 130.0
+margin_top = 31.0
+margin_right = 297.0
+margin_bottom = 58.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MemoryMapSpinBox" type="SpinBox" parent="GUI/TabContainer/System/GridContainer/MemoryHBox"]
+margin_right = 134.0
+margin_bottom = 27.0
+min_value = 1.0
+max_value = 16.0
+value = 1.0
+align = 1
+
+[node name="MemoryMapOptionButton" type="OptionButton" parent="GUI/TabContainer/System/GridContainer/MemoryHBox"]
+margin_left = 138.0
+margin_right = 167.0
+margin_bottom = 27.0
+
+[node name="ControlPanel" type="Panel" parent="GUI"]
+margin_top = 441.0
+margin_right = 288.0
+margin_bottom = 641.0
+rect_min_size = Vector2( 0, 200 )
+size_flags_horizontal = 3
+
+[node name="CenterContainer" type="CenterContainer" parent="GUI/ControlPanel"]
+anchor_right = 1.0
+margin_top = 73.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GridContainer" type="GridContainer" parent="GUI/ControlPanel/CenterContainer"]
+margin_right = 340.0
+margin_bottom = 98.0
+size_flags_horizontal = 5
+columns = 2
+
+[node name="GenerateMapButton" type="Button" parent="GUI/ControlPanel/CenterContainer/GridContainer"]
+margin_right = 144.0
+margin_bottom = 31.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
+custom_fonts/font = SubResource( 4 )
+custom_colors/font_color = Color( 0.552941, 1, 0.219608, 1 )
+text = "Generate Map"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SaveButton" type="Button" parent="GUI/ControlPanel/CenterContainer/GridContainer"]
+margin_left = 148.0
+margin_right = 340.0
+margin_bottom = 31.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
+custom_fonts/font = ExtResource( 2 )
+text = "Save Configuration"
+
+[node name="FileDialog" type="FileDialog" parent="GUI/ControlPanel/CenterContainer/GridContainer/SaveButton"]
+margin_top = 31.0
+margin_right = 500.0
+margin_bottom = 331.0
+rect_min_size = Vector2( 400, 200 )
+theme = SubResource( 5 )
+popup_exclusive = true
+window_title = "Save Configuration"
+dialog_autowrap = true
+access = 2
+filters = PoolStringArray( "*json ; JSON files" )
+current_dir = "/"
+current_path = "/"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ClearButton" type="Button" parent="GUI/ControlPanel/CenterContainer/GridContainer"]
+margin_top = 35.0
+margin_right = 144.0
+margin_bottom = 66.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
+custom_fonts/font = SubResource( 4 )
+custom_colors/font_color = Color( 1, 0.788235, 0, 1 )
+text = "Clear Map"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LoadButton" type="Button" parent="GUI/ControlPanel/CenterContainer/GridContainer"]
+margin_left = 148.0
+margin_top = 35.0
+margin_right = 340.0
+margin_bottom = 66.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
+custom_fonts/font = ExtResource( 2 )
+text = "Load Configuration"
+
+[node name="FileDialog" type="FileDialog" parent="GUI/ControlPanel/CenterContainer/GridContainer/LoadButton"]
+margin_right = 500.0
+margin_bottom = 300.0
+rect_min_size = Vector2( 400, 200 )
+theme = SubResource( 5 )
+popup_exclusive = true
+window_title = "Open a File"
+dialog_autowrap = true
+mode = 0
+access = 2
+filters = PoolStringArray( "*json ; JSON files" )
+current_dir = "/"
+current_path = "/"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ExitButton" type="Button" parent="GUI/ControlPanel/CenterContainer/GridContainer"]
+margin_top = 70.0
+margin_right = 144.0
+margin_bottom = 98.0
+custom_colors/font_color_disabled = Color( 0, 0, 0, 1 )
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+text = "Exit"
+
+[node name="SavesFolderButton" type="Button" parent="GUI/ControlPanel/CenterContainer/GridContainer"]
+margin_left = 148.0
+margin_top = 70.0
+margin_right = 340.0
+margin_bottom = 98.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
+custom_fonts/font = ExtResource( 2 )
+text = "Open Saves Folder"
+
+[node name="Pointer" type="MeshInstance" parent="."]
+transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 9.53674e-07 )
+visible = false
+mesh = SubResource( 6 )
+material/0 = SubResource( 7 )
+script = ExtResource( 4 )
+
+[node name="Camera" type="Camera" parent="Pointer"]
+transform = Transform( 0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 2.2, 2.2, 2.2 )
+current = true
+far = 500.0
