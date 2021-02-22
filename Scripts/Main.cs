@@ -1,16 +1,19 @@
 using Godot;
 using System;
 
-public class Main : Spatial
+namespace ProceduralGeneration
 {
-    public override void _Input(InputEvent @event)
+    public class Main : Spatial
     {
-        if (@event is InputEventKey)
+        public override void _Input(InputEvent @event)
         {
-            if (Input.IsKeyPressed((int)KeyList.Escape))
+            if (@event is InputEventKey)
             {
-                GetTree().Quit();
-            }    
-        }    
+                if (Input.IsKeyPressed((int)KeyList.Escape))
+                {
+                    GetTree().Quit();
+                }
+            }
+        }
     }
 }
