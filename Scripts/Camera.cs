@@ -33,6 +33,7 @@ namespace ProceduralGeneration
             if (@event is InputEventKey e)
             {
                 var tmp = new SVector3(Translation);
+                tmp.r = 3f;
                 if (e.Scancode == (uint)KeyList.Up && !e.IsPressed())
                 {
                     tmp.phi += .1f;
@@ -41,8 +42,7 @@ namespace ProceduralGeneration
                 {
                     tmp.phi -= .1f;
                 }
-
-                if (e.Scancode == (uint)KeyList.Left && !e.IsPressed())
+                else if (e.Scancode == (uint)KeyList.Left && !e.IsPressed())
                 {
                     tmp.theta -= .1f;
                 }
@@ -51,17 +51,19 @@ namespace ProceduralGeneration
                     tmp.theta += .1f;
                 }
 
-                tmp.phi = Mathf.Clamp(tmp.phi, 0, Mathf.Pi / 2);
-                tmp.theta = Mathf.Clamp(tmp.theta, 0, Mathf.Pi * 2);
+                tmp.phi = Mathf.Clamp(tmp.phi, 1f / Mathf.Pi, Mathf.Pi / 2 - 0.2f);
+                //tmp.theta = Mathf.Clamp(tmp.theta, 0, Mathf.Pi * 2);
 
                 GD.Print("NEW EVENT");
                 GD.Print(tmp);
 
-                LookAtFromPosition(
-                    tmp,
-                    Vector3.Zero,
-                    Vector3.Up
-                    );
+                Translation = tmp;
+
+                //LookAtFromPosition(
+                //    tmp,
+                //    Vector3.Zero,
+                //    Vector3.Up
+                //    );
                 GD.Print(Translation);
             }
         }

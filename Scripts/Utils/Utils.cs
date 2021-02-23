@@ -13,8 +13,8 @@ namespace ProceduralGeneration.Utils
 
         public static SVector3 CarthesianToSpherical(Vector3 coord) => new SVector3(
                 Mathf.Sqrt(coord.x * coord.x + coord.y * coord.y + coord.z * coord.z),
-                Mathf.Acos(coord.z/Mathf.Sqrt(coord.x * coord.x + coord.y * coord.y + coord.z * coord.z)),
-//                Mathf.Atan(Mathf.Sqrt(coord.x * coord.x + coord.y * coord.y) / coord.z),
+                //Mathf.Acos(coord.z/Mathf.Sqrt(coord.x * coord.x + coord.y * coord.y + coord.z * coord.z)),
+                Mathf.Atan(Mathf.Sqrt(coord.x * coord.x + coord.y * coord.y) / coord.z),
                 Mathf.Atan(coord.y / coord.x)
             );
 
