@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://Scripts/MapGenerator/MapGenerator.cs" type="Script" id=1]
 [ext_resource path="res://Resources/Fonts/unispace.tres" type="DynamicFont" id=2]
@@ -17,10 +17,6 @@ flags_no_depth_test = true
 flags_do_not_receive_shadows = true
 albedo_color = Color( 1, 0, 0, 1 )
 
-[sub_resource type="QuadMesh" id=3]
-
-[sub_resource type="CubeMesh" id=4]
-
 [sub_resource type="DynamicFont" id=5]
 font_data = ExtResource( 6 )
 
@@ -33,12 +29,13 @@ script = ExtResource( 3 )
 
 [node name="MapGenerator" type="Node" parent="."]
 script = ExtResource( 1 )
+_meshPath = NodePath("../TestMesh")
 _seedNodePath = NodePath("../ControlPanel/VBoxContainer/SeedInput")
 _widthNodePath = NodePath("../ControlPanel/VBoxContainer/GridContainer/MapWidthSpinBox")
 _heigthNodePath = NodePath("../ControlPanel/VBoxContainer/GridContainer/MapHeightSpinBox")
 
 [node name="Pointer" type="MeshInstance" parent="."]
-transform = Transform( 1, 0, -4.65661e-10, 0, 1, 2.98023e-08, 0, -2.98023e-08, 1, 0, 0, 9.53674e-07 )
+transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 9.53674e-07 )
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 script = ExtResource( 4 )
@@ -47,17 +44,7 @@ script = ExtResource( 4 )
 transform = Transform( 0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 2.2, 2.2, 2.2 )
 current = true
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
-transform = Transform( 2, 0, 0, 0, -3.25841e-07, 2, 0, -2, -3.25841e-07, 0, 0, 0 )
-visible = false
-mesh = SubResource( 3 )
-material/0 = null
-
-[node name="MeshInstance2" type="MeshInstance" parent="."]
-transform = Transform( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
-visible = false
-mesh = SubResource( 4 )
-material/0 = null
+[node name="TestMesh" type="MeshInstance" parent="."]
 
 [node name="ControlPanel" type="Panel" parent="."]
 modulate = Color( 1, 1, 1, 0.784314 )

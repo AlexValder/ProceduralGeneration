@@ -18,16 +18,20 @@ namespace MapGenerator
         private bool _shouldEmptySeed = false;
 
         [Export]
+        private NodePath _meshPath = new NodePath();
+        private MeshInstance _meshInstance;
+
+        [Export]
         private NodePath _seedNodePath = new NodePath();
-        private LineEdit _seedLineEdit = null;
+        private LineEdit _seedLineEdit;
 
         [Export]
         private NodePath _widthNodePath = new NodePath();
-        private SpinBox _widthSpinBox = null;
+        private SpinBox _widthSpinBox;
 
         [Export]
         private NodePath _heigthNodePath = new NodePath();
-        private SpinBox _heigthSpinBox = null;
+        private SpinBox _heigthSpinBox;
 
         public override void _Ready()
         {
@@ -36,6 +40,7 @@ namespace MapGenerator
                 _seedLineEdit = GetNode<LineEdit>(_seedNodePath);
                 _widthSpinBox = GetNode<SpinBox>(_widthNodePath);
                 _heigthSpinBox = GetNode<SpinBox>(_heigthNodePath);
+                _meshInstance = GetNode<MeshInstance>(_meshPath);
             }
             catch (Exception ex)
             {
@@ -82,7 +87,33 @@ namespace MapGenerator
 
         private void BuildPolygons(int[,] map)
         {
+            SurfaceTool st = new SurfaceTool();
 
+            st.Begin(Mesh.PrimitiveType.Triangles);
+
+            for (int i = 0; i < map.GetLength(0) - 1; ++i)
+            {
+                for (int j = 0; j < map.GetLength(1) - 1; ++j)
+                {
+                    st.AddVertex(new Vector3(i + 1, map[i + 1, j + 1], j + 1));
+                    st.AddVertex(new Vector3(i, map[i, j + 1], j + 1));
+                    st.AddVertex(new Vector3(i, map[i, j], j));
+
+                    st.AddVertex(new Vector3(i, map[i, j], j));
+                    st.AddVertex(new Vector3(i + 1, map[i + 1, j], j));
+                    st.AddVertex(new Vector3(i + 1, map[i + 1, j + 1], j + 1));
+                }
+            }
+
+            st.GenerateNormals();
+            st.Index();
+            var mesh = st.Commit();
+            var mat = new SpatialMaterial
+            {
+                AlbedoColor = new Color(0, .75f, .1f)
+            };
+            mesh.SurfaceSetMaterial(0, mat);
+            _meshInstance.Mesh = mesh;
         }
 
         private void PopulateConfig()
