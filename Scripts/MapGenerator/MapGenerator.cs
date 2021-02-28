@@ -1,21 +1,42 @@
 using Godot;
 using System;
-using System.Text;
+using Newtonsoft.Json;
 
-namespace MapGenerator
+namespace ProceduralGeneration.MapGen
 {
     public class MapConfig
     {
         public int Seed { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
+        public int MinAmplitude { get; set; }
+        public int MaxAmplitude { get; set; }
+
+        public override string ToString()
+            => JsonConvert.SerializeObject(this);
     }
 
     public class MapGenerator : Node
     {
-        private Random _random;
+        public MapConfig Config
+        {
+            get => _config;
+            set
+            {
+                _seedLineEdit.Text = (_config.Seed = value.Seed).ToString();
+                _widthSpinBox.Value = _config.Width = value.Width;
+                _heigthSpinBox.Value = _config.Height = value.Height;
+                _minSpinBox.Value = _config.MinAmplitude = value.MinAmplitude;
+                _maxSpinBox.Value = _config.MaxAmplitude = value.MaxAmplitude;
+                CreateTestMap();
+            }
+        }
         private readonly MapConfig _config = new MapConfig();
+
+        private Random _random;
         private bool _shouldEmptySeed = false;
+
+        #region NodePaths and Nodes
 
         [Export]
         private NodePath _meshPath = new NodePath();
@@ -33,6 +54,16 @@ namespace MapGenerator
         private NodePath _heigthNodePath = new NodePath();
         private SpinBox _heigthSpinBox;
 
+        [Export]
+        private NodePath _minNodePath = new NodePath();
+        private SpinBox _minSpinBox;
+
+        [Export]
+        private NodePath _maxNodePath = new NodePath();
+        private SpinBox _maxSpinBox;
+
+        #endregion
+
         public override void _Ready()
         {
             try
@@ -40,6 +71,9 @@ namespace MapGenerator
                 _seedLineEdit = GetNode<LineEdit>(_seedNodePath);
                 _widthSpinBox = GetNode<SpinBox>(_widthNodePath);
                 _heigthSpinBox = GetNode<SpinBox>(_heigthNodePath);
+                _minSpinBox = GetNode<SpinBox>(_minNodePath);
+                _maxSpinBox = GetNode<SpinBox>(_maxNodePath);
+
                 _meshInstance = GetNode<MeshInstance>(_meshPath);
             }
             catch (Exception ex)
@@ -50,28 +84,29 @@ namespace MapGenerator
 
         private void CreateTestMap()
         {
-            var map = new int[_config.Width, _config.Height];
+            var map = new int[Config.Width, Config.Height];
+
+            _random = new Random(Config.Seed);
 
             GD.Print("Started.");
+            GD.Print($"Seed retrieved: {Config.Seed}");
 
-            GD.Print($"Seed retrieved: {_config.Seed}");
-
-            for (int j = 0; j < _config.Height; ++j)
+            for (int j = 0; j < Config.Height; ++j)
             {
-                for (int i = 0; i < _config.Width; ++i)
+                for (int i = 0; i < Config.Width; ++i)
                 {
-                    map[i, j] = _random.Next(0, 2);
+                    map[i, j] = _random.Next(Config.MinAmplitude, Config.MaxAmplitude + 1);
                 }
             }
 
-            GD.Print($"Noise map ({_config.Width}x{_config.Height}) generated. Building polygons...");
+            GD.Print($"Noise map ({Config.Width}x{Config.Height}) generated. Building polygons...");
 
             BuildPolygons(map);
 
             GD.Print("Finished.");
         }
 
-        private void _on_GenerateMapButton_button_up()
+        internal void _on_GenerateMapButton_button_up()
         {
             try
             {
@@ -125,20 +160,22 @@ namespace MapGenerator
 
             if (!_seedLineEdit.Text.Empty())
             {
-                _config.Seed = _seedLineEdit.Text.GetHashCode();
-                _random = new Random(_config.Seed);
+                Config.Seed = _seedLineEdit.Text.GetHashCode();
                 _shouldEmptySeed = false;
             }
             else
             {
-                _config.Seed = (int)DateTime.UtcNow.Ticks;
-                _random = new Random(_config.Seed);
-                _seedLineEdit.Text = _config.Seed.ToString();
+                Config.Seed = (int)DateTime.UtcNow.Ticks;
+                _seedLineEdit.Text = Config.Seed.ToString();
                 _shouldEmptySeed = true;
             }
 
-            _config.Width = (int)_widthSpinBox.Value;
-            _config.Height = (int)_heigthSpinBox.Value;
+            Config.Width = (int)_widthSpinBox.Value;
+            Config.Height = (int)_heigthSpinBox.Value;
+            Config.MinAmplitude = (int)_minSpinBox.Value;
+            Config.MaxAmplitude = (int)_maxSpinBox.Value;
+
+            GD.Print($"{Config}");
         }
     }
 }
