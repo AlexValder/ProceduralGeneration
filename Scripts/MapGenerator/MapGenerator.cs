@@ -2,90 +2,112 @@ using Godot;
 using System;
 using System.Text;
 
-public class MapGenerator : Node
+namespace MapGenerator
 {
-    private Random _random;
-    private int _seed;
-    private bool _shouldEmptySeed = false;
-
-    private NodePath _lineEdit = "../ControlPanel/VBoxContainer/SeedInput";
-    private LineEdit _seedInput = null;
-
-    public override void _Ready()
+    public class MapConfig
     {
-        try
-        {
-            _seedInput = (LineEdit)GetNode(_lineEdit);
-        }
-        catch (Exception ex)
-        {
-            GD.Print($"Exception: {ex.Message}");
-        }
+        public int Seed { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 
-    private void CreateTestMap()
+    public class MapGenerator : Node
     {
-        const int size = 20;
+        private Random _random;
+        private readonly MapConfig _config = new MapConfig();
+        private bool _shouldEmptySeed = false;
 
-        var map = new int[size, size];
+        [Export]
+        private NodePath _seedNodePath = new NodePath();
+        private LineEdit _seedLineEdit = null;
 
-        GD.Print("Started.");
+        [Export]
+        private NodePath _widthNodePath = new NodePath();
+        private SpinBox _widthSpinBox = null;
 
-        GD.Print($"Seed retrieved: {_seed}");
+        [Export]
+        private NodePath _heigthNodePath = new NodePath();
+        private SpinBox _heigthSpinBox = null;
 
-        var sb = new StringBuilder();
-
-        for (int i = 0; i < size; ++i)
+        public override void _Ready()
         {
-            for (int j = 0; j < size; ++j)
+            try
             {
-                map[i, j] = _random.Next(0, 2);
-                if (map[i, j] == 0)
-                {
-                    sb.Append('o');
-                }
-                else
-                {
-                    sb.Append('x');
-                }
+                _seedLineEdit = GetNode<LineEdit>(_seedNodePath);
+                _widthSpinBox = GetNode<SpinBox>(_widthNodePath);
+                _heigthSpinBox = GetNode<SpinBox>(_heigthNodePath);
             }
-            sb.Append('\n');
+            catch (Exception ex)
+            {
+                GD.Print($"Exception: {ex.Message}");
+            }
         }
 
-        GD.Print("MAP:");
-        GD.Print(sb.ToString());
+        private void CreateTestMap()
+        {
+            var map = new int[_config.Width, _config.Height];
 
-        GD.Print("Finished.");
-    }
+            GD.Print("Started.");
 
-    private void _on_GenerateMapButton_button_up()
-    {
-        try
+            GD.Print($"Seed retrieved: {_config.Seed}");
+
+            var sb = new StringBuilder();
+
+            for (int j = 0; j < _config.Height; ++j)
+            {
+                for (int i = 0; i < _config.Width; ++i)
+                {
+                    map[i, j] = _random.Next(0, 2);
+
+                    if (map[i, j] == 0) sb.Append('o');
+                    else sb.Append('x');
+                }
+                sb.Append('\n');
+            }
+
+            GD.Print($"MAP ({_config.Width}x{_config.Height}):");
+            GD.Print(sb.ToString());
+
+            GD.Print("Finished.");
+        }
+
+        private void _on_GenerateMapButton_button_up()
+        {
+            try
+            {
+                PopulateConfig();
+            }
+            catch (Exception ex)
+            {
+                GD.Print($"Exception in signal: {ex.Message}\n{ex.StackTrace}");
+            }
+
+            CreateTestMap();
+        }
+
+        private void PopulateConfig()
         {
             if (_shouldEmptySeed)
             {
-                _seedInput.Clear();
+                _seedLineEdit.Clear();
             }
 
-            if (!_seedInput.Text.Empty())
+            if (!_seedLineEdit.Text.Empty())
             {
-                _seed = _seedInput.Text.GetHashCode();
-                _random = new Random(_seed);
+                _config.Seed = _seedLineEdit.Text.GetHashCode();
+                _random = new Random(_config.Seed);
                 _shouldEmptySeed = false;
             }
             else
             {
-                _seed = (int)DateTime.UtcNow.Ticks;
-                _random = new Random(_seed);
-                _seedInput.Text = _seed.ToString();
+                _config.Seed = (int)DateTime.UtcNow.Ticks;
+                _random = new Random(_config.Seed);
+                _seedLineEdit.Text = _config.Seed.ToString();
                 _shouldEmptySeed = true;
             }
-        }
-        catch (Exception ex)
-        {
-            GD.Print($"Exception in signal: {ex.Message}\n{ex.StackTrace}");
-        }
 
-        CreateTestMap();
+            _config.Width = (int)_widthSpinBox.Value;
+            _config.Height = (int)_heigthSpinBox.Value;
+        }
     }
 }

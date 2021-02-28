@@ -7,7 +7,7 @@ namespace ProceduralGeneration
     public class Camera : Godot.Camera
     {
         [Export]
-        private float MouseSensitivity = 3f;
+        //private float MouseSensitivity = 3f;
         private float InitialRadius = 3f;
 
         public override void _Ready()

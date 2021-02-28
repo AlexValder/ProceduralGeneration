@@ -23,6 +23,9 @@ script = ExtResource( 2 )
 
 [node name="MapGenerator" type="Node" parent="."]
 script = ExtResource( 1 )
+_seedNodePath = NodePath("../ControlPanel/VBoxContainer/SeedInput")
+_widthNodePath = NodePath("../ControlPanel/VBoxContainer/GridContainer/MapWidthSpinBox")
+_heigthNodePath = NodePath("../ControlPanel/VBoxContainer/GridContainer/MapHeightSpinBox")
 
 [node name="Pointer" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, -4.65661e-10, 0, 1, 2.98023e-08, 0, -2.98023e-08, 1, 0, 0, 9.53674e-07 )
@@ -63,23 +66,68 @@ __meta__ = {
 anchor_left = 0.1
 anchor_right = 0.9
 anchor_bottom = 1.0
+custom_constants/separation = 10
 alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="RandomSeedLabel" type="Label" parent="ControlPanel/VBoxContainer"]
-margin_top = 239.0
+[node name="MapParametersLabel" type="Label" parent="ControlPanel/VBoxContainer"]
+margin_top = 187.0
 margin_right = 188.0
-margin_bottom = 253.0
+margin_bottom = 201.0
+text = "Map Parameters"
+align = 1
+
+[node name="GridContainer" type="GridContainer" parent="ControlPanel/VBoxContainer"]
+margin_top = 211.0
+margin_right = 188.0
+margin_bottom = 263.0
+columns = 2
+
+[node name="MapWidthLabel" type="Label" parent="ControlPanel/VBoxContainer/GridContainer"]
+margin_top = 5.0
+margin_right = 73.0
+margin_bottom = 19.0
+text = "Map Width"
+
+[node name="MapWidthSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/GridContainer"]
+margin_left = 77.0
+margin_right = 188.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+min_value = 10.0
+value = 20.0
+align = 1
+
+[node name="MapHeightLabel" type="Label" parent="ControlPanel/VBoxContainer/GridContainer"]
+margin_top = 33.0
+margin_right = 73.0
+margin_bottom = 47.0
+text = "Map Height"
+
+[node name="MapHeightSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/GridContainer"]
+margin_left = 77.0
+margin_top = 28.0
+margin_right = 188.0
+margin_bottom = 52.0
+size_flags_horizontal = 3
+min_value = 10.0
+value = 20.0
+align = 1
+
+[node name="RandomSeedLabel" type="Label" parent="ControlPanel/VBoxContainer"]
+margin_top = 273.0
+margin_right = 188.0
+margin_bottom = 287.0
 text = "Random Seed"
 align = 1
 valign = 1
 
 [node name="SeedInput" type="LineEdit" parent="ControlPanel/VBoxContainer"]
-margin_top = 257.0
+margin_top = 297.0
 margin_right = 188.0
-margin_bottom = 281.0
+margin_bottom = 321.0
 size_flags_horizontal = 3
 align = 1
 __meta__ = {
@@ -88,9 +136,9 @@ __meta__ = {
 
 [node name="SeedHint" type="Label" parent="ControlPanel/VBoxContainer"]
 modulate = Color( 1, 1, 1, 0.462745 )
-margin_top = 285.0
+margin_top = 331.0
 margin_right = 188.0
-margin_bottom = 316.0
+margin_bottom = 362.0
 text = "Note: empty line would mean random seed"
 align = 1
 valign = 1
@@ -98,9 +146,9 @@ autowrap = true
 
 [node name="GenerateMapButton" type="Button" parent="ControlPanel/VBoxContainer"]
 margin_left = 43.0
-margin_top = 320.0
+margin_top = 372.0
 margin_right = 145.0
-margin_bottom = 340.0
+margin_bottom = 392.0
 size_flags_horizontal = 4
 custom_colors/font_color = Color( 0.552941, 1, 0.219608, 1 )
 text = "Generate Map"
