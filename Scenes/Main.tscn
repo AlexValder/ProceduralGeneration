@@ -1,8 +1,11 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://Scripts/MapGenerator/MapGenerator.cs" type="Script" id=1]
-[ext_resource path="res://Scripts/Main.cs" type="Script" id=2]
-[ext_resource path="res://Scripts/Pointer.cs" type="Script" id=3]
+[ext_resource path="res://Resources/Fonts/unispace.tres" type="DynamicFont" id=2]
+[ext_resource path="res://Scripts/Main.cs" type="Script" id=3]
+[ext_resource path="res://Scripts/Pointer.cs" type="Script" id=4]
+[ext_resource path="res://Resources/gui_theme.tres" type="Theme" id=5]
+[ext_resource path="res://Resources/Fonts/unispace_rg.otf" type="DynamicFontData" id=6]
 
 [sub_resource type="CubeMesh" id=1]
 size = Vector3( 0.05, 0.05, 0.05 )
@@ -18,8 +21,15 @@ albedo_color = Color( 1, 0, 0, 1 )
 
 [sub_resource type="CubeMesh" id=4]
 
+[sub_resource type="DynamicFont" id=5]
+font_data = ExtResource( 6 )
+
+[sub_resource type="DynamicFont" id=6]
+size = 14
+font_data = ExtResource( 6 )
+
 [node name="Spatial" type="Spatial"]
-script = ExtResource( 2 )
+script = ExtResource( 3 )
 
 [node name="MapGenerator" type="Node" parent="."]
 script = ExtResource( 1 )
@@ -31,7 +41,7 @@ _heigthNodePath = NodePath("../ControlPanel/VBoxContainer/GridContainer/MapHeigh
 transform = Transform( 1, 0, -4.65661e-10, 0, 1, 2.98023e-08, 0, -2.98023e-08, 1, 0, 0, 9.53674e-07 )
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
-script = ExtResource( 3 )
+script = ExtResource( 4 )
 
 [node name="Camera" type="Camera" parent="Pointer"]
 transform = Transform( 0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 2.2, 2.2, 2.2 )
@@ -73,62 +83,69 @@ __meta__ = {
 }
 
 [node name="MapParametersLabel" type="Label" parent="ControlPanel/VBoxContainer"]
-margin_top = 187.0
+margin_top = 178.0
 margin_right = 188.0
-margin_bottom = 201.0
+margin_bottom = 198.0
+custom_fonts/font = SubResource( 5 )
 text = "Map Parameters"
 align = 1
 
 [node name="GridContainer" type="GridContainer" parent="ControlPanel/VBoxContainer"]
-margin_top = 211.0
+margin_top = 208.0
 margin_right = 188.0
-margin_bottom = 263.0
+margin_bottom = 262.0
 columns = 2
 
 [node name="MapWidthLabel" type="Label" parent="ControlPanel/VBoxContainer/GridContainer"]
 margin_top = 5.0
-margin_right = 73.0
-margin_bottom = 19.0
+margin_right = 70.0
+margin_bottom = 20.0
+custom_fonts/font = ExtResource( 2 )
 text = "Map Width"
 
 [node name="MapWidthSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/GridContainer"]
-margin_left = 77.0
+margin_left = 74.0
 margin_right = 188.0
-margin_bottom = 24.0
+margin_bottom = 25.0
 size_flags_horizontal = 3
+theme = ExtResource( 5 )
 min_value = 10.0
 value = 20.0
 align = 1
 
 [node name="MapHeightLabel" type="Label" parent="ControlPanel/VBoxContainer/GridContainer"]
-margin_top = 33.0
-margin_right = 73.0
-margin_bottom = 47.0
+margin_top = 34.0
+margin_right = 70.0
+margin_bottom = 49.0
+custom_fonts/font = ExtResource( 2 )
 text = "Map Height"
 
 [node name="MapHeightSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/GridContainer"]
-margin_left = 77.0
-margin_top = 28.0
+margin_left = 74.0
+margin_top = 29.0
 margin_right = 188.0
-margin_bottom = 52.0
+margin_bottom = 54.0
 size_flags_horizontal = 3
+theme = ExtResource( 5 )
 min_value = 10.0
 value = 20.0
 align = 1
 
 [node name="RandomSeedLabel" type="Label" parent="ControlPanel/VBoxContainer"]
-margin_top = 273.0
+margin_top = 272.0
 margin_right = 188.0
-margin_bottom = 287.0
+margin_bottom = 290.0
+custom_fonts/font = SubResource( 6 )
 text = "Random Seed"
 align = 1
 valign = 1
 
 [node name="SeedInput" type="LineEdit" parent="ControlPanel/VBoxContainer"]
-margin_top = 297.0
+margin_top = 300.0
 margin_right = 188.0
-margin_bottom = 321.0
+margin_bottom = 325.0
 size_flags_horizontal = 3
+custom_fonts/font = ExtResource( 2 )
 align = 1
 __meta__ = {
 "_edit_use_anchors_": false
@@ -136,20 +153,22 @@ __meta__ = {
 
 [node name="SeedHint" type="Label" parent="ControlPanel/VBoxContainer"]
 modulate = Color( 1, 1, 1, 0.462745 )
-margin_top = 331.0
+margin_top = 335.0
 margin_right = 188.0
-margin_bottom = 362.0
+margin_bottom = 368.0
+custom_fonts/font = ExtResource( 2 )
 text = "Note: empty line would mean random seed"
 align = 1
 valign = 1
 autowrap = true
 
 [node name="GenerateMapButton" type="Button" parent="ControlPanel/VBoxContainer"]
-margin_left = 43.0
-margin_top = 372.0
-margin_right = 145.0
-margin_bottom = 392.0
+margin_left = 34.0
+margin_top = 378.0
+margin_right = 154.0
+margin_bottom = 402.0
 size_flags_horizontal = 4
+custom_fonts/font = SubResource( 6 )
 custom_colors/font_color = Color( 0.552941, 1, 0.219608, 1 )
 text = "Generate Map"
 [connection signal="button_up" from="ControlPanel/VBoxContainer/GenerateMapButton" to="MapGenerator" method="_on_GenerateMapButton_button_up"]

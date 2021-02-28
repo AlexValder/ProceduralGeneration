@@ -16,8 +16,8 @@ _global_script_class_icons={
 [application]
 
 config/name="Procedural Generation"
-run/main_scene="res://Main.tscn"
-config/icon="res://icon.png"
+run/main_scene="res://Scenes/Main.tscn"
+config/icon="res://Resources/icon.png"
 
 [autoload]
 
@@ -25,4 +25,4 @@ MapGenerator="*res://Scripts/MapGenerator/MapGenerator.cs"
 
 [rendering]
 
-environment/default_environment="res://default_env.tres"
+environment/default_environment="res://Resources/default_env.tres"

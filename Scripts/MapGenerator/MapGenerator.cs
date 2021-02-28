@@ -51,22 +51,17 @@ namespace MapGenerator
 
             GD.Print($"Seed retrieved: {_config.Seed}");
 
-            var sb = new StringBuilder();
-
             for (int j = 0; j < _config.Height; ++j)
             {
                 for (int i = 0; i < _config.Width; ++i)
                 {
                     map[i, j] = _random.Next(0, 2);
-
-                    if (map[i, j] == 0) sb.Append('o');
-                    else sb.Append('x');
                 }
-                sb.Append('\n');
             }
 
-            GD.Print($"MAP ({_config.Width}x{_config.Height}):");
-            GD.Print(sb.ToString());
+            GD.Print($"Noise map ({_config.Width}x{_config.Height}) generated. Building polygons...");
+
+            BuildPolygons(map);
 
             GD.Print("Finished.");
         }
@@ -83,6 +78,11 @@ namespace MapGenerator
             }
 
             CreateTestMap();
+        }
+
+        private void BuildPolygons(int[,] map)
+        {
+
         }
 
         private void PopulateConfig()
