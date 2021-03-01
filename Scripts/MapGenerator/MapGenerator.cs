@@ -31,6 +31,7 @@ namespace ProceduralGeneration.MapGen
                 CreateTestMap();
             }
         }
+
         private readonly MapConfig _config = new MapConfig();
 
         private Random _random;
@@ -68,13 +69,13 @@ namespace ProceduralGeneration.MapGen
         {
             try
             {
-                _seedLineEdit = GetNode<LineEdit>(_seedNodePath);
-                _widthSpinBox = GetNode<SpinBox>(_widthNodePath);
-                _heigthSpinBox = GetNode<SpinBox>(_heigthNodePath);
-                _minSpinBox = GetNode<SpinBox>(_minNodePath);
-                _maxSpinBox = GetNode<SpinBox>(_maxNodePath);
+                _seedLineEdit   = GetNode<LineEdit>(_seedNodePath);
+                _widthSpinBox   = GetNode<SpinBox>(_widthNodePath);
+                _heigthSpinBox  = GetNode<SpinBox>(_heigthNodePath);
+                _minSpinBox     = GetNode<SpinBox>(_minNodePath);
+                _maxSpinBox     = GetNode<SpinBox>(_maxNodePath);
 
-                _meshInstance = GetNode<MeshInstance>(_meshPath);
+                _meshInstance   = GetNode<MeshInstance>(_meshPath);
             }
             catch (Exception ex)
             {

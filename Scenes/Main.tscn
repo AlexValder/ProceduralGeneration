@@ -50,6 +50,7 @@ script = ExtResource( 4 )
 [node name="Camera" type="Camera" parent="Pointer"]
 transform = Transform( 0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 2.2, 2.2, 2.2 )
 current = true
+far = 500.0
 
 [node name="TestMesh" type="MeshInstance" parent="."]
 
@@ -70,6 +71,10 @@ __meta__ = {
 anchor_left = 0.1
 anchor_right = 0.9
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 custom_constants/separation = 10
 alignment = 1
 __meta__ = {
