@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using Newtonsoft.Json;
+using Serilog;
+using Serilog.Sinks;
 using ProceduralGeneration.MapGen;
 
 using SDirectory = System.IO.Directory;
@@ -12,9 +14,11 @@ namespace ProceduralGeneration
     public class Main : Spatial
     {
 #if DEBUG
-        public readonly string SavesDirectory = "../Saves/";
+        public readonly string SavesDirectory = SPath.GetFullPath("../Saves/");
+        public readonly string LogsDirectory = SPath.GetFullPath("../Logs/");
 #else
         public readonly string SavesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
+        public readonly string LogsDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Logs/");
 #endif
         [Export]
         private readonly NodePath _saveButton = "ControlPanel/VBoxContainer/SaveButton";
@@ -25,6 +29,8 @@ namespace ProceduralGeneration
 
         public override void _Ready()
         {
+            SetupLogger();
+
             OS.WindowMaximized = true;
 
             // Config saving
@@ -69,7 +75,7 @@ namespace ProceduralGeneration
             }
             catch (Exception ex)
             {
-                GD.Print(ex.Message);
+                Log.Logger.Error(ex, "Failed to create Saves directory.");
             }
         }
 
@@ -82,6 +88,27 @@ namespace ProceduralGeneration
                     GetTree().Quit();
                 }
             }
+        }
+
+        private void SetupLogger()
+        {
+            var builder = new LoggerConfiguration();
+
+            SDirectory.CreateDirectory(LogsDirectory);
+            var fileName = SPath.Combine(LogsDirectory, $"{DateTime.Now.Year}-" +
+                                                        $"{DateTime.Now.Month}-" +
+                                                        $"{DateTime.Now.Day}-" +
+                                                        $"{DateTime.Now.Ticks}" +
+                                                        $".log");
+
+            builder
+                .WriteTo.Console()
+                .MinimumLevel.Debug()
+                .WriteTo.File(fileName)
+                .MinimumLevel.Warning()
+                ;
+
+            Log.Logger = builder.CreateLogger();
         }
 
         #region Save and Load

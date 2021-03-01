@@ -1,4 +1,5 @@
 using Godot;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -55,7 +56,7 @@ namespace ProceduralGeneration
             }
             catch (Exception ex)
             {
-                GD.Print(ex.Message);
+                Log.Logger.Error(ex, "Failed to initialize Pointer.");
             }
         }
 

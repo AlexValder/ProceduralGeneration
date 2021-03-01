@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using Serilog;
 using Newtonsoft.Json;
 
 namespace ProceduralGeneration.MapGen
@@ -79,7 +80,7 @@ namespace ProceduralGeneration.MapGen
             }
             catch (Exception ex)
             {
-                GD.Print($"Exception: {ex.Message}");
+                Log.Logger.Error(ex, "Failed to initialize MapGenerator.");
             }
         }
 
@@ -89,8 +90,8 @@ namespace ProceduralGeneration.MapGen
 
             _random = new Random(Config.Seed);
 
-            GD.Print("Started.");
-            GD.Print($"Seed retrieved: {Config.Seed}");
+            Log.Logger.Debug("Started.");
+            Log.Logger.Debug("Seed retrieved: {Seed}", Config.Seed);
 
             for (int j = 0; j < Config.Height; ++j)
             {
@@ -100,11 +101,11 @@ namespace ProceduralGeneration.MapGen
                 }
             }
 
-            GD.Print($"Noise map ({Config.Width}x{Config.Height}) generated. Building polygons...");
+            Log.Logger.Debug("Noise map ({Width}x{Height}) generated. Building polygons...", Config.Width, Config.Height);
 
             BuildPolygons(map);
 
-            GD.Print("Finished.");
+            Log.Logger.Debug("Finished.");
         }
 
         internal void _on_GenerateMapButton_button_up()
@@ -115,7 +116,7 @@ namespace ProceduralGeneration.MapGen
             }
             catch (Exception ex)
             {
-                GD.Print($"Exception in signal: {ex.Message}\n{ex.StackTrace}");
+                Log.Logger.Error(ex, "Failed to populate config.");
             }
 
             CreateTestMap();
@@ -175,8 +176,6 @@ namespace ProceduralGeneration.MapGen
             Config.Height = (int)_heigthSpinBox.Value;
             Config.MinAmplitude = (int)_minSpinBox.Value;
             Config.MaxAmplitude = (int)_maxSpinBox.Value;
-
-            GD.Print($"{Config}");
         }
     }
 }
