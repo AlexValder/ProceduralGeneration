@@ -13,6 +13,8 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         public int MinAmplitude { get; set; }
         public int MaxAmplitude { get; set; }
         public float Scale { get; set; }
+        
+        public float Persistence { get; set; }
 
         public override string ToString()
             => JsonConvert.SerializeObject(this);
@@ -30,6 +32,12 @@ namespace ProceduralGeneration.Scripts.MapGenerator
                 _heightSpinBox.Value = _config.Height = value.Height;
                 _minSpinBox.Value = _config.MinAmplitude = value.MinAmplitude;
                 _maxSpinBox.Value = _config.MaxAmplitude = value.MaxAmplitude;
+                _persistenceSlider.Value = _config.Persistence = value.Persistence;
+
+                _noise.Seed = value.Seed;
+                _noise.Lacunarity = 0.8f;
+                _noise.Persistence = value.Persistence;
+
                 CreateTestMap();
             }
         }
@@ -37,6 +45,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         private readonly MapConfig _config = new MapConfig();
 
         private Random _random;
+        private readonly OpenSimplexNoise _noise = new OpenSimplexNoise();
         private bool _shouldEmptySeed;
 
         #region NodePaths and Nodes
@@ -53,21 +62,20 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         private NodePath _widthNodePath = new NodePath();
         private SpinBox _widthSpinBox;
 
-        [Export]
-        private NodePath _heightNodePath = new NodePath();
+        [Export] private NodePath _heightNodePath = new NodePath();
         private SpinBox _heightSpinBox;
 
-        [Export]
-        private NodePath _minNodePath = new NodePath();
+        [Export] private NodePath _minNodePath = new NodePath();
         private SpinBox _minSpinBox;
 
-        [Export]
-        private NodePath _maxNodePath = new NodePath();
+        [Export] private NodePath _maxNodePath = new NodePath();
         private SpinBox _maxSpinBox;
 
-        [Export]
-        private NodePath _scaleNodePath = new NodePath();
+        [Export] private NodePath _scaleNodePath = new NodePath();
         private SpinBox _scaleSpinBox;
+
+        [Export] private NodePath _persistenceNodePath = new NodePath();
+        private Slider _persistenceSlider;
 
         #endregion
 
@@ -77,14 +85,15 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         {
             try
             {
-                _seedLineEdit   = GetNode<LineEdit>(_seedNodePath);
-                _widthSpinBox   = GetNode<SpinBox>(_widthNodePath);
-                _heightSpinBox  = GetNode<SpinBox>(_heightNodePath);
-                _minSpinBox     = GetNode<SpinBox>(_minNodePath);
-                _maxSpinBox     = GetNode<SpinBox>(_maxNodePath);
-                _scaleSpinBox   = GetNode<SpinBox>(_scaleNodePath);
+                _seedLineEdit        = GetNode<LineEdit>(_seedNodePath);
+                _widthSpinBox        = GetNode<SpinBox>(_widthNodePath);
+                _heightSpinBox       = GetNode<SpinBox>(_heightNodePath);
+                _minSpinBox          = GetNode<SpinBox>(_minNodePath);
+                _maxSpinBox          = GetNode<SpinBox>(_maxNodePath);
+                _scaleSpinBox        = GetNode<SpinBox>(_scaleNodePath);
+                _persistenceSlider   = GetNode<Slider>(_persistenceNodePath);
 
-                _meshInstance   = GetNode<MeshInstance>(_meshPath);
+                _meshInstance        = GetNode<MeshInstance>(_meshPath);
             }
             catch (Exception ex)
             {
@@ -98,23 +107,20 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         {
             Log.Logger.Debug("Started");
             Log.Logger.Debug("Seed retrieved: {Seed}", Config.Seed);
-
+            Log.Logger.Debug("Config: {Config}", Config);
+            
             var map = new float[Config.Width, Config.Height];
 
             _random = new Random(Config.Seed);
-            var tmp = new OpenSimplexNoise
-            {
-                Seed = Config.Seed
-            };
 
-            for (int i = 0; i < Config.Width; ++i)
+            var diff = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude); 
+
+            for (var i = 0; i < Config.Width; ++i)
             {
-                for (int j = 0; j < Config.Height; ++j)
+                for (var j = 0; j < Config.Height; ++j)
                 {
-                    map[i, j] = _random.Next(Config.MinAmplitude, Config.MaxAmplitude + 1);
-                    map[i, j] *= tmp.GetNoise2d(i, j) * Config.Scale;
+                    map[i, j] = _noise.GetNoise2d(i / Config.Scale, j / Config.Scale) * diff;
                 }
-                Console.WriteLine();
             }
 
             Log.Logger.Debug("Noise map ({Width}x{Height}) generated. Building polygons...",
@@ -140,26 +146,35 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             CreateTestMap();
         }
 
-        private void BuildPolygons(float[,] map)
+        private void BuildPolygons(in float[,] map)
         {
+            // Scale "water"
+
+            var waterMeshInstance = _meshInstance.GetChild<MeshInstance>(0);
+            waterMeshInstance.Visible = true;
+            waterMeshInstance.Scale = new Vector3(Config.Width, Config.Height, 1);
+            waterMeshInstance.Translation = new Vector3(Config.Width / 2, 0, Config.Height / 2);
+            
             var st = new SurfaceTool();
 
             st.Begin(Mesh.PrimitiveType.Triangles);
 
-            for (int i = 0; i < map.GetLength(0) - 1; ++i)
+            // Generate "Land"
+            
+            for (var i = 0; i < map.GetLength(0) - 1; ++i)
             {
-                for (int j = 0; j < map.GetLength(1) - 1; ++j)
+                for (var j = 0; j < map.GetLength(1) - 1; ++j)
                 {
-                    st.AddVertex(new Vector3(i + 1, map[i + 1, j + 1], j + 1));
-                    st.AddVertex(new Vector3(i, map[i, j + 1], j + 1));
-                    st.AddVertex(new Vector3(i, map[i, j], j));
-
                     st.AddVertex(new Vector3(i, map[i, j], j));
                     st.AddVertex(new Vector3(i + 1, map[i + 1, j], j));
                     st.AddVertex(new Vector3(i + 1, map[i + 1, j + 1], j + 1));
+                    
+                    st.AddVertex(new Vector3(i + 1, map[i + 1, j + 1], j + 1));
+                    st.AddVertex(new Vector3(i, map[i, j + 1], j + 1));
+                    st.AddVertex(new Vector3(i, map[i, j], j));
                 }
             }
-
+            
             st.GenerateNormals();
             st.Index();
             var mesh = st.Commit();
@@ -195,6 +210,30 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             Config.MinAmplitude = (int)_minSpinBox.Value;
             Config.MaxAmplitude = (int)_maxSpinBox.Value;
             Config.Scale = (float)_scaleSpinBox.Value;
+            Config.Persistence = (float)_persistenceSlider.Value;
+            
+            _noise.Seed = Config.Seed;
+            _noise.Octaves = 9;
+            _noise.Lacunarity = 0.8f;
+            _noise.Persistence = Config.Persistence;
+        }
+        
+        private void _on_SeedInput_text_changed(string newSeed)
+        {
+            var oldSeed = Config.Seed;
+            try
+            {
+                Config.Seed = int.Parse(newSeed);
+                _noise.Seed = Config.Seed;
+                _shouldEmptySeed = false;
+            }
+            catch (Exception ex)
+            {
+                Config.Seed = oldSeed;
+                _noise.Seed = oldSeed;
+                _shouldEmptySeed = true;
+                Log.Logger.Error(ex, "Failed to parse seed");
+            }
         }
     }
 }

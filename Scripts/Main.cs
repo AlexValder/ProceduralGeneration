@@ -12,7 +12,7 @@ namespace ProceduralGeneration.Scripts
 {
     public class Main : Spatial
     {
-        private readonly string _logFile = "error_log.log";
+        private const string LogFile = "error_log.log";
 #if DEBUG
         private readonly string _savesDirectory = SPath.GetFullPath("../Saves/");
         private readonly string _logsDirectory = SPath.GetFullPath("../");
@@ -20,12 +20,14 @@ namespace ProceduralGeneration.Scripts
         public readonly string _savesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
         public readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
-        [Export]
-        private readonly NodePath _saveButton = "ControlPanel/VBoxContainer/SaveButton";
-        [Export]
-        private readonly NodePath _loadButton = "ControlPanel/VBoxContainer/LoadButton";
-        [Export]
-        private readonly NodePath _genMapButton = "ControlPanel/VBoxContainer/GenerateMapButton";
+        [Export] private static readonly NodePath MenuConfig = "ControlPanel/VBoxContainer";
+        
+        private readonly NodePath _saveButton = $"{MenuConfig}/SaveButton";
+        private readonly NodePath _loadButton = $"{MenuConfig}/LoadButton";
+        private readonly NodePath _genMapButton = $"{MenuConfig}/GenerateMapButton";
+        private readonly NodePath _persistenceContainer = $"{MenuConfig}/MapParametersGrid/HBoxContainer/";
+
+        private Label _persistenceValueLabel;
 
         #region Godot Overrides
 
@@ -41,13 +43,13 @@ namespace ProceduralGeneration.Scripts
                 "pressed",
                 this,
                 nameof(_on_SaveButton_pressed)
-                );
+            );
 
             GetNode($"{_saveButton}/FileDialog").Connect(
                 "file_selected",
                 this,
                 nameof(_on_SaveFileDialog_file_selected)
-                );
+            );
 
             // Config loading
 
@@ -55,13 +57,28 @@ namespace ProceduralGeneration.Scripts
                 "pressed",
                 this,
                 nameof(_on_LoadButton_pressed)
-                );
+            );
 
             GetNode($"{_loadButton}/FileDialog").Connect(
                 "file_selected",
                 this,
                 nameof(_on_LoadFileDialog_file_selected)
-                );
+            );
+
+            GetNode($"{_persistenceContainer}/PersistenceSlider").Connect(
+                "value_changed",
+                this,
+                nameof(_on_PersistenceSlider_value_changed)
+            );
+
+            try
+            {
+                _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Failed to get node");
+            }
 
             // MapGenerator
 
@@ -99,7 +116,7 @@ namespace ProceduralGeneration.Scripts
             var builder = new LoggerConfiguration();
 
             SDirectory.CreateDirectory(_logsDirectory);
-            var fileName = SPath.Combine(_logsDirectory, _logFile);
+            var fileName = SPath.Combine(_logsDirectory, LogFile);
 
             builder
 #if DEBUG
@@ -157,6 +174,11 @@ namespace ProceduralGeneration.Scripts
             var json = SFile.ReadAllText(path);
             GetNode<Label>("ControlPanel/VBoxContainer/LoadedFileLabel").Text = path;
             mg.Config = JsonConvert.DeserializeObject<MapConfig>(json);
+        }
+        
+        private void _on_PersistenceSlider_value_changed(float value)
+        {
+            _persistenceValueLabel.Text = $"{value,3}";
         }
 
         #endregion
