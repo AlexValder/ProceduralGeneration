@@ -1,24 +1,24 @@
-using Godot;
 using System;
+using Godot;
 using Newtonsoft.Json;
+using ProceduralGeneration.Scripts.MapGenerator;
 using Serilog;
-using Serilog.Sinks;
-using ProceduralGeneration.MapGen;
-
+using Serilog.Events;
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
 
-namespace ProceduralGeneration
+namespace ProceduralGeneration.Scripts
 {
     public class Main : Spatial
     {
+        private readonly string _logFile = "error_log.log";
 #if DEBUG
-        public readonly string SavesDirectory = SPath.GetFullPath("../Saves/");
-        public readonly string LogsDirectory = SPath.GetFullPath("../Logs/");
+        private readonly string _savesDirectory = SPath.GetFullPath("../Saves/");
+        private readonly string _logsDirectory = SPath.GetFullPath("../");
 #else
-        public readonly string SavesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
-        public readonly string LogsDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Logs/");
+        public readonly string _savesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
+        public readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
         [Export]
         private readonly NodePath _saveButton = "ControlPanel/VBoxContainer/SaveButton";
@@ -26,6 +26,8 @@ namespace ProceduralGeneration
         private readonly NodePath _loadButton = "ControlPanel/VBoxContainer/LoadButton";
         [Export]
         private readonly NodePath _genMapButton = "ControlPanel/VBoxContainer/GenerateMapButton";
+
+        #region Godot Overrides
 
         public override void _Ready()
         {
@@ -66,16 +68,16 @@ namespace ProceduralGeneration
             GetNode(_genMapButton).Connect(
                 "pressed",
                 GetChild(0),
-                nameof(MapGenerator._on_GenerateMapButton_button_up)
+                nameof(MapGenerator.MapGenerator._on_GenerateMapButton_button_up)
                 );
 
             try
             {
-                SDirectory.CreateDirectory(SavesDirectory);
+                SDirectory.CreateDirectory(_savesDirectory);
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "Failed to create Saves directory.");
+                Log.Logger.Error(ex, "Failed to create Saves director");
             }
         }
 
@@ -90,23 +92,24 @@ namespace ProceduralGeneration
             }
         }
 
+        #endregion
+
         private void SetupLogger()
         {
             var builder = new LoggerConfiguration();
 
-            SDirectory.CreateDirectory(LogsDirectory);
-            var fileName = SPath.Combine(LogsDirectory, $"{DateTime.Now.Year}-" +
-                                                        $"{DateTime.Now.Month}-" +
-                                                        $"{DateTime.Now.Day}-" +
-                                                        $"{DateTime.Now.Ticks}" +
-                                                        $".log");
+            SDirectory.CreateDirectory(_logsDirectory);
+            var fileName = SPath.Combine(_logsDirectory, _logFile);
 
             builder
+#if DEBUG
                 .WriteTo.Console()
                 .MinimumLevel.Debug()
-                .WriteTo.File(fileName)
-                .MinimumLevel.Warning()
-                ;
+#endif
+                .WriteTo.File(
+                    path: fileName,
+                    restrictedToMinimumLevel: LogEventLevel.Warning
+                    );
 
             Log.Logger = builder.CreateLogger();
         }
@@ -116,13 +119,13 @@ namespace ProceduralGeneration
         private void _on_SaveButton_pressed()
         {
             var fd = GetNode<FileDialog>($"{_saveButton}/FileDialog");
-            fd.CurrentDir = SPath.GetFullPath(SavesDirectory);
+            fd.CurrentDir = SPath.GetFullPath(_savesDirectory);
             fd.PopupCentered();
         }
 
         private void _on_SaveFileDialog_file_selected(string path)
         {
-            var mg = GetChild<MapGenerator>(0);
+            var mg = GetChild<MapGenerator.MapGenerator>(0);
             var json = JsonConvert.SerializeObject(mg.Config, Formatting.Indented);
 
             if (path.EndsWith("json") && !path.EndsWith(".json"))
@@ -144,13 +147,13 @@ namespace ProceduralGeneration
         private void _on_LoadButton_pressed()
         {
             var fd = GetNode<FileDialog>($"{_loadButton}/FileDialog");
-            fd.CurrentDir = SPath.GetFullPath(SavesDirectory);
+            fd.CurrentDir = SPath.GetFullPath(_savesDirectory);
             fd.PopupCentered();
         }
 
         private void _on_LoadFileDialog_file_selected(string path)
         {
-            var mg = GetChild<MapGenerator>(0);
+            var mg = GetChild<MapGenerator.MapGenerator>(0);
             var json = SFile.ReadAllText(path);
             GetNode<Label>("ControlPanel/VBoxContainer/LoadedFileLabel").Text = path;
             mg.Config = JsonConvert.DeserializeObject<MapConfig>(json);

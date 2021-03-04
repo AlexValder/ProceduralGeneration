@@ -1,9 +1,9 @@
-using Godot;
 using System;
-using Serilog;
+using Godot;
 using Newtonsoft.Json;
+using Serilog;
 
-namespace ProceduralGeneration.MapGen
+namespace ProceduralGeneration.Scripts.MapGenerator
 {
     public class MapConfig
     {
@@ -12,6 +12,7 @@ namespace ProceduralGeneration.MapGen
         public int Height { get; set; }
         public int MinAmplitude { get; set; }
         public int MaxAmplitude { get; set; }
+        public float Scale { get; set; }
 
         public override string ToString()
             => JsonConvert.SerializeObject(this);
@@ -26,7 +27,7 @@ namespace ProceduralGeneration.MapGen
             {
                 _seedLineEdit.Text = (_config.Seed = value.Seed).ToString();
                 _widthSpinBox.Value = _config.Width = value.Width;
-                _heigthSpinBox.Value = _config.Height = value.Height;
+                _heightSpinBox.Value = _config.Height = value.Height;
                 _minSpinBox.Value = _config.MinAmplitude = value.MinAmplitude;
                 _maxSpinBox.Value = _config.MaxAmplitude = value.MaxAmplitude;
                 CreateTestMap();
@@ -36,7 +37,7 @@ namespace ProceduralGeneration.MapGen
         private readonly MapConfig _config = new MapConfig();
 
         private Random _random;
-        private bool _shouldEmptySeed = false;
+        private bool _shouldEmptySeed;
 
         #region NodePaths and Nodes
 
@@ -53,8 +54,8 @@ namespace ProceduralGeneration.MapGen
         private SpinBox _widthSpinBox;
 
         [Export]
-        private NodePath _heigthNodePath = new NodePath();
-        private SpinBox _heigthSpinBox;
+        private NodePath _heightNodePath = new NodePath();
+        private SpinBox _heightSpinBox;
 
         [Export]
         private NodePath _minNodePath = new NodePath();
@@ -64,7 +65,13 @@ namespace ProceduralGeneration.MapGen
         private NodePath _maxNodePath = new NodePath();
         private SpinBox _maxSpinBox;
 
+        [Export]
+        private NodePath _scaleNodePath = new NodePath();
+        private SpinBox _scaleSpinBox;
+
         #endregion
+
+        #region Godot Overrides
 
         public override void _Ready()
         {
@@ -72,40 +79,51 @@ namespace ProceduralGeneration.MapGen
             {
                 _seedLineEdit   = GetNode<LineEdit>(_seedNodePath);
                 _widthSpinBox   = GetNode<SpinBox>(_widthNodePath);
-                _heigthSpinBox  = GetNode<SpinBox>(_heigthNodePath);
+                _heightSpinBox  = GetNode<SpinBox>(_heightNodePath);
                 _minSpinBox     = GetNode<SpinBox>(_minNodePath);
                 _maxSpinBox     = GetNode<SpinBox>(_maxNodePath);
+                _scaleSpinBox   = GetNode<SpinBox>(_scaleNodePath);
 
                 _meshInstance   = GetNode<MeshInstance>(_meshPath);
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "Failed to initialize MapGenerator.");
+                Log.Logger.Error(ex, "Failed to initialize MapGenerator");
             }
         }
 
+        #endregion
+
         private void CreateTestMap()
         {
-            var map = new int[Config.Width, Config.Height];
-
-            _random = new Random(Config.Seed);
-
-            Log.Logger.Debug("Started.");
+            Log.Logger.Debug("Started");
             Log.Logger.Debug("Seed retrieved: {Seed}", Config.Seed);
 
-            for (int j = 0; j < Config.Height; ++j)
+            var map = new float[Config.Width, Config.Height];
+
+            _random = new Random(Config.Seed);
+            var tmp = new OpenSimplexNoise
             {
-                for (int i = 0; i < Config.Width; ++i)
+                Seed = Config.Seed
+            };
+
+            for (int i = 0; i < Config.Width; ++i)
+            {
+                for (int j = 0; j < Config.Height; ++j)
                 {
                     map[i, j] = _random.Next(Config.MinAmplitude, Config.MaxAmplitude + 1);
+                    map[i, j] *= tmp.GetNoise2d(i, j) * Config.Scale;
                 }
+                Console.WriteLine();
             }
 
-            Log.Logger.Debug("Noise map ({Width}x{Height}) generated. Building polygons...", Config.Width, Config.Height);
+            Log.Logger.Debug("Noise map ({Width}x{Height}) generated. Building polygons...",
+                Config.Width,
+                Config.Height);
 
             BuildPolygons(map);
 
-            Log.Logger.Debug("Finished.");
+            Log.Logger.Debug("Finished");
         }
 
         internal void _on_GenerateMapButton_button_up()
@@ -116,15 +134,15 @@ namespace ProceduralGeneration.MapGen
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "Failed to populate config.");
+                Log.Logger.Error(ex, "Failed to populate config");
             }
 
             CreateTestMap();
         }
 
-        private void BuildPolygons(int[,] map)
+        private void BuildPolygons(float[,] map)
         {
-            SurfaceTool st = new SurfaceTool();
+            var st = new SurfaceTool();
 
             st.Begin(Mesh.PrimitiveType.Triangles);
 
@@ -173,9 +191,10 @@ namespace ProceduralGeneration.MapGen
             }
 
             Config.Width = (int)_widthSpinBox.Value;
-            Config.Height = (int)_heigthSpinBox.Value;
+            Config.Height = (int)_heightSpinBox.Value;
             Config.MinAmplitude = (int)_minSpinBox.Value;
             Config.MaxAmplitude = (int)_maxSpinBox.Value;
+            Config.Scale = (float)_scaleSpinBox.Value;
         }
     }
 }
