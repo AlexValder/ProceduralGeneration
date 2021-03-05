@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.CompilerServices;
 using Godot;
 using Newtonsoft.Json;
 using Serilog;
 
+[assembly: InternalsVisibleTo("Main")]
 namespace ProceduralGeneration.Scripts.MapGenerator
 {
     public class MapConfig
@@ -13,13 +15,13 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         public int MinAmplitude { get; set; }
         public int MaxAmplitude { get; set; }
         public float Scale { get; set; }
-        
         public float Persistence { get; set; }
+        public int Octaves { get; set; }
 
         public override string ToString()
             => JsonConvert.SerializeObject(this);
     }
-
+    
     public class MapGenerator : Node
     {
         public MapConfig Config
@@ -33,10 +35,12 @@ namespace ProceduralGeneration.Scripts.MapGenerator
                 _minSpinBox.Value = _config.MinAmplitude = value.MinAmplitude;
                 _maxSpinBox.Value = _config.MaxAmplitude = value.MaxAmplitude;
                 _persistenceSlider.Value = _config.Persistence = value.Persistence;
+                _octavesSlider.Value = _config.Octaves = value.Octaves;
 
                 _noise.Seed = value.Seed;
                 _noise.Lacunarity = 0.8f;
                 _noise.Persistence = value.Persistence;
+                _noise.Octaves = value.Octaves;
 
                 CreateTestMap();
             }
@@ -44,7 +48,6 @@ namespace ProceduralGeneration.Scripts.MapGenerator
 
         private readonly MapConfig _config = new MapConfig();
 
-        private Random _random;
         private readonly OpenSimplexNoise _noise = new OpenSimplexNoise();
         private bool _shouldEmptySeed;
 
@@ -77,6 +80,9 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         [Export] private NodePath _persistenceNodePath = new NodePath();
         private Slider _persistenceSlider;
 
+        [Export] private NodePath _octavesNodePath = new NodePath();
+        private Slider _octavesSlider;
+
         #endregion
 
         #region Godot Overrides
@@ -92,6 +98,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
                 _maxSpinBox          = GetNode<SpinBox>(_maxNodePath);
                 _scaleSpinBox        = GetNode<SpinBox>(_scaleNodePath);
                 _persistenceSlider   = GetNode<Slider>(_persistenceNodePath);
+                _octavesSlider       = GetNode<Slider>(_octavesNodePath);
 
                 _meshInstance        = GetNode<MeshInstance>(_meshPath);
             }
@@ -110,8 +117,6 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             Log.Logger.Debug("Config: {Config}", Config);
             
             var map = new float[Config.Width, Config.Height];
-
-            _random = new Random(Config.Seed);
 
             var diff = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude); 
 
@@ -211,14 +216,15 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             Config.MaxAmplitude = (int)_maxSpinBox.Value;
             Config.Scale = (float)_scaleSpinBox.Value;
             Config.Persistence = (float)_persistenceSlider.Value;
+            Config.Octaves = (int)_octavesSlider.Value;
             
             _noise.Seed = Config.Seed;
-            _noise.Octaves = 9;
+            _noise.Octaves = Config.Octaves;
             _noise.Lacunarity = 0.8f;
             _noise.Persistence = Config.Persistence;
         }
         
-        private void _on_SeedInput_text_changed(string newSeed)
+        internal void _on_SeedInput_text_changed(string newSeed)
         {
             var oldSeed = Config.Seed;
             try

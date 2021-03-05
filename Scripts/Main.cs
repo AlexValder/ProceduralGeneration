@@ -25,9 +25,13 @@ namespace ProceduralGeneration.Scripts
         private readonly NodePath _saveButton = $"{MenuConfig}/SaveButton";
         private readonly NodePath _loadButton = $"{MenuConfig}/LoadButton";
         private readonly NodePath _genMapButton = $"{MenuConfig}/GenerateMapButton";
-        private readonly NodePath _persistenceContainer = $"{MenuConfig}/MapParametersGrid/HBoxContainer/";
+        private readonly NodePath _persistenceContainer = $"{MenuConfig}/MapParametersGrid/PersistenceHBox/";
+        private readonly NodePath _octavesContainer = $"{MenuConfig}/MapParametersGrid/OctavesHBox/";
 
         private Label _persistenceValueLabel;
+        private Label _octavesValueLabel;
+
+        private MapGenerator.MapGenerator _mapGen;
 
         #region Godot Overrides
 
@@ -71,9 +75,24 @@ namespace ProceduralGeneration.Scripts
                 nameof(_on_PersistenceSlider_value_changed)
             );
 
+            GetNode($"{_octavesContainer}/OctavesSlider").Connect(
+                "value_changed",
+                this,
+                nameof(_on_OctavesSlider_value_changed)
+            );
+
+            _mapGen = GetChild<MapGenerator.MapGenerator>(0);
+
+            GetNode($"{MenuConfig}/SeedInput").Connect(
+                "text_changed",
+                _mapGen,
+                nameof(_mapGen._on_SeedInput_text_changed)
+            );
+
             try
             {
                 _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
+                _octavesValueLabel = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
             }
             catch (Exception ex)
             {
@@ -178,7 +197,12 @@ namespace ProceduralGeneration.Scripts
         
         private void _on_PersistenceSlider_value_changed(float value)
         {
-            _persistenceValueLabel.Text = $"{value,3}";
+            _persistenceValueLabel.Text = value.ToString("N2");
+        }
+        
+        private void _on_OctavesSlider_value_changed(float value)
+        {
+            _octavesValueLabel.Text = $"{(int)value}";
         }
 
         #endregion
