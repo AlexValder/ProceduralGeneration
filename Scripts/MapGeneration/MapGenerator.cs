@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Serilog;
 
 [assembly: InternalsVisibleTo("Main")]
-namespace ProceduralGeneration.Scripts.MapGenerator
+namespace ProceduralGeneration.Scripts.MapGeneration
 {
     public class MapConfig
     {
@@ -17,6 +17,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         public float Scale { get; set; }
         public float Persistence { get; set; }
         public int Octaves { get; set; }
+        public float Lacunarity { get; set; }
 
         public override string ToString()
             => JsonConvert.SerializeObject(this);
@@ -83,6 +84,9 @@ namespace ProceduralGeneration.Scripts.MapGenerator
         [Export] private NodePath _octavesNodePath = new NodePath();
         private Slider _octavesSlider;
 
+        [Export] private NodePath _lacunarityNodePath = new NodePath();
+        private SpinBox _lacunaritySpinBox;
+
         #endregion
 
         #region Godot Overrides
@@ -99,6 +103,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
                 _scaleSpinBox        = GetNode<SpinBox>(_scaleNodePath);
                 _persistenceSlider   = GetNode<Slider>(_persistenceNodePath);
                 _octavesSlider       = GetNode<Slider>(_octavesNodePath);
+                _lacunaritySpinBox   = GetNode<SpinBox>(_lacunarityNodePath);
 
                 _meshInstance        = GetNode<MeshInstance>(_meshPath);
             }
@@ -124,7 +129,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             {
                 for (var j = 0; j < Config.Height; ++j)
                 {
-                    map[i, j] = _noise.GetNoise2d(i / Config.Scale, j / Config.Scale) * diff;
+                    map[i, j] = _noise.GetNoise2d(i / Config.Scale, j / Config.Scale) * diff + Config.MinAmplitude;
                 }
             }
 
@@ -137,7 +142,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             Log.Logger.Debug("Finished");
         }
 
-        internal void _on_GenerateMapButton_button_up()
+        public void GenerateMap()
         {
             try
             {
@@ -205,7 +210,7 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             }
             else
             {
-                Config.Seed = (int)DateTime.UtcNow.Ticks;
+                Config.Seed = new Random((int)DateTime.UtcNow.Ticks).Next();
                 _seedLineEdit.Text = Config.Seed.ToString();
                 _shouldEmptySeed = true;
             }
@@ -217,10 +222,11 @@ namespace ProceduralGeneration.Scripts.MapGenerator
             Config.Scale = (float)_scaleSpinBox.Value;
             Config.Persistence = (float)_persistenceSlider.Value;
             Config.Octaves = (int)_octavesSlider.Value;
+            Config.Lacunarity = (float)_lacunaritySpinBox.Value;
             
             _noise.Seed = Config.Seed;
             _noise.Octaves = Config.Octaves;
-            _noise.Lacunarity = 0.8f;
+            _noise.Lacunarity = Config.Lacunarity;
             _noise.Persistence = Config.Persistence;
         }
         

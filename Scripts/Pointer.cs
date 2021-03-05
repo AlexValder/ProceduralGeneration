@@ -25,7 +25,7 @@ namespace ProceduralGeneration.Scripts
         private enum Direction
         {
             Vertical,
-            Horizontal
+            Horizontal,
         };
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace ProceduralGeneration.Scripts
         private enum Scroll
         {
             Closer,
-            Further
+            Further,
         };
 
         private static readonly ImmutableDictionary<KeyList, Vector3> Actions =
@@ -49,16 +49,16 @@ namespace ProceduralGeneration.Scripts
         private static readonly ImmutableDictionary<KeyList, (Direction, int)> CameraRotation =
             new Dictionary<KeyList, (Direction, int)>()
             {
-                [KeyList.Left] = (Direction.Horizontal, 1),
+                [KeyList.Left]  = (Direction.Horizontal, 1),
                 [KeyList.Right] = (Direction.Horizontal, -1),
-                [KeyList.Up] = (Direction.Vertical, 1),
-                [KeyList.Down] = (Direction.Vertical, -1),
+                [KeyList.Up]    = (Direction.Vertical, 1),
+                [KeyList.Down]  = (Direction.Vertical, -1),
             }.ToImmutableDictionary();
 
         private static readonly ImmutableDictionary<ButtonList, Scroll> Scrolling =
             new Dictionary<ButtonList, Scroll>()
             {
-                [ButtonList.WheelUp] = Scroll.Further,
+                [ButtonList.WheelUp]   = Scroll.Further,
                 [ButtonList.WheelDown] = Scroll.Closer,
             }.ToImmutableDictionary();
 

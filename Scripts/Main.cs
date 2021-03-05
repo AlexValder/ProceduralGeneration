@@ -1,7 +1,7 @@
 using System;
 using Godot;
 using Newtonsoft.Json;
-using ProceduralGeneration.Scripts.MapGenerator;
+using ProceduralGeneration.Scripts.MapGeneration;
 using Serilog;
 using Serilog.Events;
 using SDirectory = System.IO.Directory;
@@ -31,7 +31,8 @@ namespace ProceduralGeneration.Scripts
         private Label _persistenceValueLabel;
         private Label _octavesValueLabel;
 
-        private MapGenerator.MapGenerator _mapGen;
+        private MapGenerator _mapGen;
+        private MeshInstance _pointer;
 
         #region Godot Overrides
 
@@ -40,6 +41,18 @@ namespace ProceduralGeneration.Scripts
             SetupLogger();
 
             OS.WindowMaximized = true;
+            
+            try
+            {
+                _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
+                _octavesValueLabel = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
+                _mapGen = GetChild<MapGenerator>(0);
+                _pointer = GetChild<MeshInstance>(1);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Failed to get node");
+            }
 
             // Config saving
 
@@ -81,30 +94,16 @@ namespace ProceduralGeneration.Scripts
                 nameof(_on_OctavesSlider_value_changed)
             );
 
-            _mapGen = GetChild<MapGenerator.MapGenerator>(0);
-
             GetNode($"{MenuConfig}/SeedInput").Connect(
                 "text_changed",
                 _mapGen,
                 nameof(_mapGen._on_SeedInput_text_changed)
             );
 
-            try
-            {
-                _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
-                _octavesValueLabel = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Failed to get node");
-            }
-
-            // MapGenerator
-
             GetNode(_genMapButton).Connect(
                 "pressed",
-                GetChild(0),
-                nameof(MapGenerator.MapGenerator._on_GenerateMapButton_button_up)
+                this,
+                nameof(_on_GenerateMapButton_button_up)
                 );
 
             try
@@ -119,12 +118,15 @@ namespace ProceduralGeneration.Scripts
 
         public override void _Input(InputEvent @event)
         {
-            if (@event is InputEventKey)
+            if (!(@event is InputEventKey)) return;
+            if (Input.IsKeyPressed((int)KeyList.Escape))
             {
-                if (Input.IsKeyPressed((int)KeyList.Escape))
-                {
-                    GetTree().Quit();
-                }
+                GetTree().Quit();
+            }
+            else if (Input.IsKeyPressed((int)KeyList.Enter))
+            {
+                _on_GenerateMapButton_button_up();
+                GetTree().SetInputAsHandled();
             }
         }
 
@@ -150,7 +152,13 @@ namespace ProceduralGeneration.Scripts
             Log.Logger = builder.CreateLogger();
         }
 
-        #region Save and Load
+        #region Signals
+
+        private void _on_GenerateMapButton_button_up()
+        {
+            _mapGen.GenerateMap();
+            _pointer.Translation = new Vector3(_mapGen.Config.Width / 2, 0, _mapGen.Config.Height / 2);
+        }
 
         private void _on_SaveButton_pressed()
         {
@@ -161,7 +169,7 @@ namespace ProceduralGeneration.Scripts
 
         private void _on_SaveFileDialog_file_selected(string path)
         {
-            var mg = GetChild<MapGenerator.MapGenerator>(0);
+            var mg = GetChild<MapGenerator>(0);
             var json = JsonConvert.SerializeObject(mg.Config, Formatting.Indented);
 
             if (path.EndsWith("json") && !path.EndsWith(".json"))
@@ -189,7 +197,7 @@ namespace ProceduralGeneration.Scripts
 
         private void _on_LoadFileDialog_file_selected(string path)
         {
-            var mg = GetChild<MapGenerator.MapGenerator>(0);
+            var mg = GetChild<MapGenerator>(0);
             var json = SFile.ReadAllText(path);
             GetNode<Label>("ControlPanel/VBoxContainer/LoadedFileLabel").Text = path;
             mg.Config = JsonConvert.DeserializeObject<MapConfig>(json);

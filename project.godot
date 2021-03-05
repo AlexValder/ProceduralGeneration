@@ -21,7 +21,7 @@ config/icon="res://Resources/icon.png"
 
 [autoload]
 
-MapGenerator="*res://Scripts/MapGenerator/MapGenerator.cs"
+MapGenerator="*res://Scripts/MapGeneration/MapGenerator.cs"
 
 [rendering]
 
