@@ -38,7 +38,7 @@ namespace ProceduralGeneration.Scripts
         };
 
         private static readonly ImmutableDictionary<KeyList, Vector3> Actions =
-            new Dictionary<KeyList, Vector3>()
+            new Dictionary<KeyList, Vector3>
             {
                 [KeyList.W] = new Vector3(0, 0, -Step),
                 [KeyList.A] = new Vector3(-Step, 0, 0),
@@ -47,7 +47,7 @@ namespace ProceduralGeneration.Scripts
             }.ToImmutableDictionary();
 
         private static readonly ImmutableDictionary<KeyList, (Direction, int)> CameraRotation =
-            new Dictionary<KeyList, (Direction, int)>()
+            new Dictionary<KeyList, (Direction, int)>
             {
                 [KeyList.Left]  = (Direction.Horizontal, 1),
                 [KeyList.Right] = (Direction.Horizontal, -1),
@@ -56,7 +56,7 @@ namespace ProceduralGeneration.Scripts
             }.ToImmutableDictionary();
 
         private static readonly ImmutableDictionary<ButtonList, Scroll> Scrolling =
-            new Dictionary<ButtonList, Scroll>()
+            new Dictionary<ButtonList, Scroll>
             {
                 [ButtonList.WheelUp]   = Scroll.Further,
                 [ButtonList.WheelDown] = Scroll.Closer,

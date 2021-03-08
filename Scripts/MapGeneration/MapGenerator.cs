@@ -39,7 +39,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration
                 _octavesSlider.Value = _config.Octaves = value.Octaves;
 
                 _noise.Seed = value.Seed;
-                _noise.Lacunarity = 0.8f;
+                _noise.Lacunarity = value.Lacunarity;
                 _noise.Persistence = value.Persistence;
                 _noise.Octaves = value.Octaves;
 

@@ -104,7 +104,7 @@ __meta__ = {
 
 [node name="MapParametersLabel" type="Label" parent="ControlPanel/VBoxContainer"]
 margin_top = 44.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 61.0
 custom_fonts/font = SubResource( 6 )
 text = "Map Parameters"
@@ -112,7 +112,7 @@ align = 1
 
 [node name="MapParametersGrid" type="GridContainer" parent="ControlPanel/VBoxContainer"]
 margin_top = 71.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 295.0
 columns = 2
 
@@ -125,7 +125,7 @@ text = "Map Width"
 
 [node name="MapWidthSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 27.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -143,7 +143,7 @@ text = "Map Height"
 [node name="MapHeightSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 31.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 58.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -161,7 +161,7 @@ text = "Min Amplitude"
 [node name="MinAmplitudeSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 62.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 89.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -181,7 +181,7 @@ text = "Max Amplitude"
 [node name="MaxAmplitudeSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 93.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 120.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -202,7 +202,7 @@ text = "Scale"
 [node name="ScaleSpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 124.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 151.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -223,14 +223,14 @@ text = "Persistence"
 [node name="PersistenceHBox" type="HBoxContainer" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 155.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 172.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PersistenceSlider" type="HSlider" parent="ControlPanel/VBoxContainer/MapParametersGrid/PersistenceHBox"]
-margin_right = 97.0
+margin_right = 80.0
 margin_bottom = 16.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -240,8 +240,8 @@ step = 0.01
 value = 0.5
 
 [node name="PersistenceValueLabel" type="Label" parent="ControlPanel/VBoxContainer/MapParametersGrid/PersistenceHBox"]
-margin_left = 101.0
-margin_right = 151.0
+margin_left = 84.0
+margin_right = 134.0
 margin_bottom = 17.0
 rect_min_size = Vector2( 50, 0 )
 custom_fonts/font = ExtResource( 2 )
@@ -259,14 +259,14 @@ text = "Octaves"
 [node name="OctavesHBox" type="HBoxContainer" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 176.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 193.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="OctavesSlider" type="HSlider" parent="ControlPanel/VBoxContainer/MapParametersGrid/OctavesHBox"]
-margin_right = 97.0
+margin_right = 80.0
 margin_bottom = 16.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -275,8 +275,8 @@ max_value = 9.0
 value = 4.0
 
 [node name="OctavesValueLabel" type="Label" parent="ControlPanel/VBoxContainer/MapParametersGrid/OctavesHBox"]
-margin_left = 101.0
-margin_right = 151.0
+margin_left = 84.0
+margin_right = 134.0
 margin_bottom = 17.0
 rect_min_size = Vector2( 50, 0 )
 custom_fonts/font = ExtResource( 2 )
@@ -294,7 +294,7 @@ text = "Lacunarity"
 [node name="LacunaritySpinBox" type="SpinBox" parent="ControlPanel/VBoxContainer/MapParametersGrid"]
 margin_left = 121.0
 margin_top = 197.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 224.0
 size_flags_horizontal = 3
 theme = ExtResource( 5 )
@@ -306,7 +306,7 @@ align = 1
 
 [node name="RandomSeedLabel" type="Label" parent="ControlPanel/VBoxContainer"]
 margin_top = 305.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 324.0
 custom_fonts/font = SubResource( 7 )
 text = "Random Seed"
@@ -315,7 +315,7 @@ valign = 1
 
 [node name="SeedInput" type="LineEdit" parent="ControlPanel/VBoxContainer"]
 margin_top = 334.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 361.0
 size_flags_horizontal = 3
 custom_fonts/font = ExtResource( 2 )
@@ -327,7 +327,7 @@ __meta__ = {
 [node name="SeedHint" type="Label" parent="ControlPanel/VBoxContainer"]
 modulate = Color( 1, 1, 1, 0.462745 )
 margin_top = 371.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 408.0
 custom_fonts/font = ExtResource( 2 )
 text = "Note: empty line would mean random seed"
@@ -336,9 +336,9 @@ valign = 1
 autowrap = true
 
 [node name="GenerateMapButton" type="Button" parent="ControlPanel/VBoxContainer"]
-margin_left = 70.0
+margin_left = 61.0
 margin_top = 418.0
-margin_right = 202.0
+margin_right = 193.0
 margin_bottom = 443.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 7 )
@@ -347,7 +347,7 @@ text = "Generate Map"
 
 [node name="SaveButton" type="Button" parent="ControlPanel/VBoxContainer"]
 margin_top = 453.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 476.0
 custom_fonts/font = ExtResource( 2 )
 text = "Save Configuration"
@@ -371,7 +371,7 @@ __meta__ = {
 
 [node name="LoadButton" type="Button" parent="ControlPanel/VBoxContainer"]
 margin_top = 486.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 509.0
 custom_fonts/font = ExtResource( 2 )
 text = "Load Configuration"
@@ -395,7 +395,7 @@ __meta__ = {
 
 [node name="LoadedFileLabel" type="Label" parent="ControlPanel/VBoxContainer"]
 margin_top = 519.0
-margin_right = 272.0
+margin_right = 255.0
 margin_bottom = 536.0
 custom_fonts/font = ExtResource( 2 )
 align = 3

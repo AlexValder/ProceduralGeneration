@@ -17,8 +17,8 @@ namespace ProceduralGeneration.Scripts
         private readonly string _savesDirectory = SPath.GetFullPath("../Saves/");
         private readonly string _logsDirectory = SPath.GetFullPath("../");
 #else
-        public readonly string _savesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
-        public readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        private readonly string _savesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
+        private readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
         [Export] private static readonly NodePath MenuConfig = "ControlPanel/VBoxContainer";
         
@@ -118,7 +118,11 @@ namespace ProceduralGeneration.Scripts
 
         public override void _Input(InputEvent @event)
         {
-            if (!(@event is InputEventKey)) return;
+            if (!(@event is InputEventKey))
+            {
+                return;
+            }
+            
             if (Input.IsKeyPressed((int)KeyList.Escape))
             {
                 GetTree().Quit();
