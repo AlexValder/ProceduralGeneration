@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -114,7 +113,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
             var minNoise = map.Cast<float>().Min();
             var maxNoise = map.Cast<float>().Max();
-            
+
             Log.Logger.Debug("Max = {Max}, Min = {Min}", maxNoise, minNoise);
 
             Task.WaitAll(
@@ -132,11 +131,12 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
         private void FillMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map) {
             for (var i = iBegin; i < iEnd; ++i)
-            for (var j = jBegin; j < jEnd; ++j)
+            for (var j = jBegin; j < jEnd; ++j) {
                 map[i, j] = _noise.GetNoise2d(
                     i / (Config.Scale * Config.Tesselation),
                     j / (Config.Scale * Config.Tesselation)
                 );
+            }
         }
 
         private void CreateMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map, float min, float max) {
@@ -144,15 +144,16 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
             var move = Math.Abs(max) - Math.Abs(min);
             var mult = diff / (max - min);
-            
+
             Log.Logger.Debug("Move: {Move}, Mult: {Mult}", move, mult);
 
             for (var i = iBegin; i < iEnd; ++i)
-            for (var j = jBegin; j < jEnd; ++j)
+            for (var j = jBegin; j < jEnd; ++j) {
                 map[i, j] =
                     Config.Correction.GetCorrection(
                         (map[i, j] + move) * mult + Config.MinAmplitude
                     );
+            }
         }
 
         public void GenerateMap() {
@@ -228,7 +229,9 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         private void PopulateConfig() {
-            if (_shouldEmptySeed) _seedLineEdit.Clear();
+            if (_shouldEmptySeed) {
+                _seedLineEdit.Clear();
+            }
 
             if (!_seedLineEdit.Text.Empty()) {
                 Config.Seed = int.TryParse(_seedLineEdit.Text, out var seed) ? seed : _seedLineEdit.Text.GetHashCode();
@@ -279,7 +282,9 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         public void ToggleWaterVisibility(bool visible) {
-            if (_meshInstance.Mesh == null) return;
+            if (_meshInstance.Mesh == null) {
+                return;
+            }
 
             _waterMeshInstance.Visible = visible;
             _toggleWater               = visible;

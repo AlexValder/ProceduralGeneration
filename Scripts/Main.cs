@@ -4,7 +4,6 @@ using Godot;
 using Newtonsoft.Json;
 using ProceduralGeneration.Scripts.MapGeneration;
 using Serilog;
-using Serilog.Events;
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
@@ -217,7 +216,9 @@ namespace ProceduralGeneration.Scripts {
         }
 
         public override void _Input(InputEvent @event) {
-            if (!(@event is InputEventKey)) return;
+            if (!(@event is InputEventKey)) {
+                return;
+            }
 
             if (Input.IsKeyPressed((int)KeyList.Escape)) {
                 GetTree().Quit();
@@ -279,9 +280,13 @@ namespace ProceduralGeneration.Scripts {
             var mg   = GetChild<MapGenerator>(0);
             var json = JsonConvert.SerializeObject(mg.Config, Formatting.Indented);
 
-            if (path.EndsWith("json") && !path.EndsWith(".json")) path = path.Substring(0, path.Length - 4) + ".json";
+            if (path.EndsWith("json") && !path.EndsWith(".json")) {
+                path = path.Substring(0, path.Length - 4) + ".json";
+            }
 
-            if (SFile.Exists(path)) SFile.Delete(path);
+            if (SFile.Exists(path)) {
+                SFile.Delete(path);
+            }
 
             using (var file = SFile.CreateText(path)) {
                 file.WriteLine(json);
