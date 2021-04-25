@@ -39,6 +39,7 @@ namespace ProceduralGeneration.Scripts {
 
         private Label _persistenceValueLabel;
         private Label _octavesValueLabel;
+        private Label _waterValueLabel;
 
         private MapGenerator _mapGen;
         private MeshInstance _pointer;
@@ -51,6 +52,11 @@ namespace ProceduralGeneration.Scripts {
                 _showWater = value;
                 _mapGen.ToggleWaterVisibility(value);
             }
+        }
+
+        private float WaterTransparency {
+            get;
+            set;
         }
 
         private bool ShowNoiseMinimap {
@@ -93,6 +99,7 @@ namespace ProceduralGeneration.Scripts {
             try {
                 _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
                 _octavesValueLabel     = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
+                _waterValueLabel       = GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
                 _mapGen                = GetChild<MapGenerator>(0);
                 _minimap               = GetChild<TextureRect>(1);
                 _pointer               = GetChild<MeshInstance>(5);
@@ -173,6 +180,12 @@ namespace ProceduralGeneration.Scripts {
                     "toggled",
                     this,
                     nameof(_on_ShowWaterCheckBox_toggled)
+                );
+
+                GetNode($"{AdvancedMenuConfig}/WaterSlider").Connect(
+                    "value_changed",
+                    this,
+                    nameof(_on_WaterSlider_value_changed)
                 );
 
                 GetNode(_noiseMinimap).Connect(
@@ -333,6 +346,12 @@ namespace ProceduralGeneration.Scripts {
 
         private void _on_ShowNoisePreviewCheckBox_toggled(bool buttonPressed) {
             ShowNoiseMinimap = buttonPressed;
+        }
+
+        private void _on_WaterSlider_value_changed(float value) {
+            Debug.Assert(0 <= value && value <= 1);
+            _waterValueLabel.Text = $"Water Transparency: {value * 100,3}%";
+            _mapGen?.SetWaterTransparency(value);
         }
 
         #endregion

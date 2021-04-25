@@ -34,6 +34,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         private readonly OpenSimplexNoise _noise = new OpenSimplexNoise();
         private bool _shouldEmptySeed;
         private bool _toggleWater = true;
+        private float _waterTransparency = 0.8f;
 
         public MapConfig Config {
             get => _config;
@@ -278,7 +279,6 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
         public void Clear() {
             ToggleWaterVisibility(false);
-            _meshInstance.Mesh = null;
         }
 
         public void ToggleWaterVisibility(bool visible) {
@@ -288,6 +288,17 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
             _waterMeshInstance.Visible = visible;
             _toggleWater               = visible;
+        }
+
+        public void SetWaterTransparency(float value) {
+            _waterTransparency = value;
+
+            if (_waterMeshInstance == null || !_waterMeshInstance.Visible) {
+                return;
+            }
+
+            var mat = _waterMeshInstance.Mesh.SurfaceGetMaterial(0) as ShaderMaterial;
+            mat?.SetShaderParam("alpha", value);
         }
 
         public Image GetNoiseImage() {
