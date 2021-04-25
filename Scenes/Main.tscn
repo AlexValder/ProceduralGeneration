@@ -6,7 +6,7 @@
 [ext_resource path="res://Scripts/Pointer.cs" type="Script" id=4]
 [ext_resource path="res://Resources/pretty_water.shader" type="Shader" id=6]
 
-[sub_resource type="ShaderMaterial" id=2]
+[sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 6 )
 shader_param/speed = Vector2( 0.25, 0.25 )
 shader_param/voronoi_scale = 200.0
@@ -15,13 +15,13 @@ shader_param/alpha = 0.8
 shader_param/color = Color( 0.01, 0.586667, 1, 1 )
 shader_param/light_color = Color( 0.796078, 1, 0.890196, 1 )
 
-[sub_resource type="QuadMesh" id=3]
-material = SubResource( 2 )
+[sub_resource type="QuadMesh" id=2]
+material = SubResource( 1 )
 
-[sub_resource type="CubeMesh" id=7]
+[sub_resource type="CubeMesh" id=3]
 size = Vector3( 0.05, 0.05, 0.05 )
 
-[sub_resource type="SpatialMaterial" id=8]
+[sub_resource type="SpatialMaterial" id=4]
 flags_unshaded = true
 flags_vertex_lighting = true
 flags_no_depth_test = true
@@ -63,7 +63,7 @@ shadow_enabled = true
 [node name="WaterMesh" type="MeshInstance" parent="TestMesh"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 0, 0 )
 visible = false
-mesh = SubResource( 3 )
+mesh = SubResource( 2 )
 material/0 = null
 
 [node name="GUI" parent="." instance=ExtResource( 2 )]
@@ -71,8 +71,8 @@ material/0 = null
 [node name="Pointer" type="MeshInstance" parent="."]
 transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 9.53674e-07 )
 visible = false
-mesh = SubResource( 7 )
-material/0 = SubResource( 8 )
+mesh = SubResource( 3 )
+material/0 = SubResource( 4 )
 script = ExtResource( 4 )
 
 [node name="Camera" type="Camera" parent="Pointer"]

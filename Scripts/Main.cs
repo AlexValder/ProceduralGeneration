@@ -104,6 +104,12 @@ namespace ProceduralGeneration.Scripts {
                 _minimap               = GetChild<TextureRect>(1);
                 _pointer               = GetChild<MeshInstance>(5);
                 _memoryUnit            = GetNode<OptionButton>($"{SystemMenuConfig}/MemoryHBox/MemoryMapOptionButton");
+                Debug.Assert(_persistenceValueLabel != null);
+                Debug.Assert(_octavesValueLabel != null);
+                Debug.Assert(_mapGen != null);
+                Debug.Assert(_minimap != null);
+                Debug.Assert(_pointer != null);
+                Debug.Assert(_memoryUnit != null);
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");

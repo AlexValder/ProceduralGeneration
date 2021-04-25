@@ -222,9 +222,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             st.GenerateNormals();
             st.Index();
             var mesh = st.Commit();
-            var mat = new SpatialMaterial {
-                AlbedoColor = new Color(0, .75f, .1f)
-            };
+            var mat  = GD.Load<ShaderMaterial>("Resources/land.tres");
             mesh.SurfaceSetMaterial(0, mat);
             _meshInstance.Mesh = mesh;
         }
@@ -278,7 +276,9 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         public void Clear() {
-            ToggleWaterVisibility(false);
+            _meshInstance.Mesh.Dispose();
+            _meshInstance.Mesh         = null;
+            _waterMeshInstance.Visible = false;
         }
 
         public void ToggleWaterVisibility(bool visible) {
