@@ -98,7 +98,7 @@ namespace ProceduralGeneration.Scripts {
 
             if (@event is InputEventMouseButton e2
                 && e2.IsPressed()
-                && Scrolling.ContainsKey((ButtonList)e2.ButtonIndex))
+                && Scrolling.ContainsKey((ButtonList)e2.ButtonIndex)) {
                 switch (Scrolling[(ButtonList)e2.ButtonIndex]) {
                     case Scroll.Closer:
                         if (_zoom < ZOOM_MAX) {
@@ -118,6 +118,7 @@ namespace ProceduralGeneration.Scripts {
                         Log.Logger.Error("Unknown value of {Scroll}", nameof(Scroll));
                         break;
                 }
+            }
         }
 
         #endregion

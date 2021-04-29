@@ -4,7 +4,6 @@ using Godot;
 using Newtonsoft.Json;
 using ProceduralGeneration.Scripts.MapGeneration;
 using Serilog;
-using Serilog.Events;
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
@@ -40,6 +39,7 @@ namespace ProceduralGeneration.Scripts {
 
         private Label _persistenceValueLabel;
         private Label _octavesValueLabel;
+        private Label _waterValueLabel;
 
         private MapGenerator _mapGen;
         private MeshInstance _pointer;
@@ -52,6 +52,11 @@ namespace ProceduralGeneration.Scripts {
                 _showWater = value;
                 _mapGen.ToggleWaterVisibility(value);
             }
+        }
+
+        private float WaterTransparency {
+            get;
+            set;
         }
 
         private bool ShowNoiseMinimap {
@@ -94,10 +99,17 @@ namespace ProceduralGeneration.Scripts {
             try {
                 _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
                 _octavesValueLabel     = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
+                _waterValueLabel       = GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
                 _mapGen                = GetChild<MapGenerator>(0);
                 _minimap               = GetChild<TextureRect>(1);
                 _pointer               = GetChild<MeshInstance>(5);
                 _memoryUnit            = GetNode<OptionButton>($"{SystemMenuConfig}/MemoryHBox/MemoryMapOptionButton");
+                Debug.Assert(_persistenceValueLabel != null);
+                Debug.Assert(_octavesValueLabel != null);
+                Debug.Assert(_mapGen != null);
+                Debug.Assert(_minimap != null);
+                Debug.Assert(_pointer != null);
+                Debug.Assert(_memoryUnit != null);
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");
@@ -176,6 +188,12 @@ namespace ProceduralGeneration.Scripts {
                     nameof(_on_ShowWaterCheckBox_toggled)
                 );
 
+                GetNode($"{AdvancedMenuConfig}/WaterSlider").Connect(
+                    "value_changed",
+                    this,
+                    nameof(_on_WaterSlider_value_changed)
+                );
+
                 GetNode(_noiseMinimap).Connect(
                     "toggled",
                     this,
@@ -217,7 +235,9 @@ namespace ProceduralGeneration.Scripts {
         }
 
         public override void _Input(InputEvent @event) {
-            if (!(@event is InputEventKey)) return;
+            if (!(@event is InputEventKey)) {
+                return;
+            }
 
             if (Input.IsKeyPressed((int)KeyList.Escape)) {
                 GetTree().Quit();
@@ -279,9 +299,13 @@ namespace ProceduralGeneration.Scripts {
             var mg   = GetChild<MapGenerator>(0);
             var json = JsonConvert.SerializeObject(mg.Config, Formatting.Indented);
 
-            if (path.EndsWith("json") && !path.EndsWith(".json")) path = path.Substring(0, path.Length - 4) + ".json";
+            if (path.EndsWith("json") && !path.EndsWith(".json")) {
+                path = path.Substring(0, path.Length - 4) + ".json";
+            }
 
-            if (SFile.Exists(path)) SFile.Delete(path);
+            if (SFile.Exists(path)) {
+                SFile.Delete(path);
+            }
 
             using (var file = SFile.CreateText(path)) {
                 file.WriteLine(json);
@@ -328,6 +352,12 @@ namespace ProceduralGeneration.Scripts {
 
         private void _on_ShowNoisePreviewCheckBox_toggled(bool buttonPressed) {
             ShowNoiseMinimap = buttonPressed;
+        }
+
+        private void _on_WaterSlider_value_changed(float value) {
+            Debug.Assert(0 <= value && value <= 1);
+            _waterValueLabel.Text = $"Water Transparency: {value * 100,3}%";
+            _mapGen?.SetWaterTransparency(value);
         }
 
         #endregion
