@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Drawing;
 using Godot;
 using Newtonsoft.Json;
 using ProceduralGeneration.Scripts.MapGeneration;
@@ -11,6 +11,7 @@ using SPath = System.IO.Path;
 
 namespace ProceduralGeneration.Scripts {
     public class Main : Spatial {
+        #region Fields
 #if DEBUG
         private readonly string _savesDirectory = SPath.GetFullPath("../Saves/");
         private readonly string _logsDirectory = SPath.GetFullPath("../");
@@ -18,18 +19,25 @@ namespace ProceduralGeneration.Scripts {
         private readonly string _savesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
         private readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
-        private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer/";
-        private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer/";
-        private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/GridContainer/";
-        private static readonly NodePath GeneralControls = "GUI/ControlPanel/CenterContainer/GridContainer/";
+        private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer";
+        private static readonly NodePath LandmassMenuConfig = "GUI/TabContainer/Landmass/GridContainer";
+        private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer";
+        // private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/GridContainer";
+        private static readonly NodePath GeneralControls = "GUI/ControlPanel/CenterContainer/GridContainer";
 
-        private readonly NodePath _persistenceContainer = $"{MapMenuConfig}/MapParametersGrid/PersistenceHBox/";
-        private readonly NodePath _octavesContainer = $"{MapMenuConfig}/MapParametersGrid/OctavesHBox/";
+        private readonly NodePath _persistenceContainer = $"{MapMenuConfig}/MapParametersGrid/PersistenceHBox";
+        private readonly NodePath _octavesContainer = $"{MapMenuConfig}/MapParametersGrid/OctavesHBox";
+
+        private readonly NodePath _snowButtonPath = $"{LandmassMenuConfig}/SnowButton";
+        private readonly NodePath _stoneButtonPath = $"{LandmassMenuConfig}/StoneButton";
+        private readonly NodePath _grassButtonPath = $"{LandmassMenuConfig}/GrassButton";
+        private readonly NodePath _sandButtonPath = $"{LandmassMenuConfig}/SandButton";
+        private readonly NodePath _colorButtonWindow = "GUI/TabContainer/Landmass/ColorPickWindow";
 
         private readonly NodePath _waterVisibility = $"{AdvancedMenuConfig}/ShowWaterCheckBox";
         private readonly NodePath _noiseMinimap = $"{AdvancedMenuConfig}/ShowNoisePreviewCheckBox";
 
-        private readonly NodePath _taskNum = $"{SystemMenuConfig}/ParallelNumSpinBox";
+        // private readonly NodePath _taskNum = $"{SystemMenuConfig}/ParallelNumSpinBox";
 
         private readonly NodePath _saveButton = $"{GeneralControls}/SaveButton";
         private readonly NodePath _loadButton = $"{GeneralControls}/LoadButton";
@@ -45,17 +53,16 @@ namespace ProceduralGeneration.Scripts {
         private MapGenerator _mapGen;
         private Pointer _pointer;
         private TextureRect _minimap;
-        private OptionButton _memoryUnit;
+        // private OptionButton _memoryUnit;
 
-        private bool ShowWater {
-            get => _showWater;
-            set {
-                _showWater = value;
-                _mapGen.ToggleWaterVisibility(value);
-            }
-        }
+        private Button _snowButton;
+        private Button _stoneButton;
+        private Button _grassButton;
+        private Button _sandButton;
+        private Popup _colorPickerDialog;
+        private ColorPicker _colorPicker;
 
-        private float WaterTransparency { get; set; }
+        #endregion
 
         private bool ShowNoiseMinimap {
             get => _showNoiseMinimap;
@@ -76,7 +83,6 @@ namespace ProceduralGeneration.Scripts {
             }
         }
 
-        private bool _showWater;
         private bool _showNoiseMinimap;
         private readonly Vector2 _minimapScale = new Vector2(256, 256);
 
@@ -98,16 +104,30 @@ namespace ProceduralGeneration.Scripts {
                 _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
                 _octavesValueLabel     = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
                 _waterValueLabel       = GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
+                _snowButton            = GetNode<Button>($"{LandmassMenuConfig}/SnowButton");
+                _stoneButton           = GetNode<Button>($"{LandmassMenuConfig}/StoneButton");
+                _grassButton           = GetNode<Button>($"{LandmassMenuConfig}/GrassButton");
+                _sandButton            = GetNode<Button>($"{LandmassMenuConfig}/SandButton");
                 _mapGen                = GetChild<MapGenerator>(0);
                 _minimap               = GetChild<TextureRect>(1);
                 _pointer               = GetChild<Pointer>(4);
-                _memoryUnit            = GetNode<OptionButton>($"{SystemMenuConfig}/MemoryHBox/MemoryMapOptionButton");
+                // _memoryUnit            = GetNode<OptionButton>($"{SystemMenuConfig}/MemoryHBox/MemoryMapOptionButton");
+
+                _colorPickerDialog = GetNode<Popup>(_colorButtonWindow);
+                _colorPicker       = GetNode<ColorPicker>($"{_colorButtonWindow}/ColorPicker");
+
                 Debug.Assert(_persistenceValueLabel != null, "Persistence Not Found");
                 Debug.Assert(_octavesValueLabel != null, "Octaves Not Found");
                 Debug.Assert(_mapGen != null, "MapGen Not Found");
                 Debug.Assert(_minimap != null, "Minimap Not Found");
                 Debug.Assert(_pointer != null, "Pointer Not Found");
-                Debug.Assert(_memoryUnit != null, "MemoryUnit Not Found");
+                // Debug.Assert(_memoryUnit != null, "MemoryUnit Not Found");
+                Debug.Assert(_snowButton != null, "Snow Button Not Found");
+                Debug.Assert(_stoneButton != null, "Stone Button Not Found");
+                Debug.Assert(_grassButton != null, "Grass Button Not Found");
+                Debug.Assert(_sandButton != null, "Sand Button Not Found");
+                Debug.Assert(_colorPickerDialog != null, "Color Picker Dialog Not Found");
+                Debug.Assert(_colorPicker != null, "Color Picker Not Found");
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");
@@ -116,14 +136,14 @@ namespace ProceduralGeneration.Scripts {
 
             // Dropdown populating
 
-            try {
-                _memoryUnit.AddItem("KiB", 0);
-                _memoryUnit.AddItem("MiB", 1);
-                _memoryUnit.AddItem("GiB", 2);
-            }
-            catch (Exception ex) {
-                Log.Logger.Error(ex, "Failed to populate dropdown");
-            }
+            // try {
+            //     _memoryUnit.AddItem("KiB", 0);
+            //     _memoryUnit.AddItem("MiB", 1);
+            //     _memoryUnit.AddItem("GiB", 2);
+            // }
+            // catch (Exception ex) {
+            //     Log.Logger.Error(ex, "Failed to populate dropdown");
+            // }
 
             #region Signal Connection
 
@@ -215,6 +235,30 @@ namespace ProceduralGeneration.Scripts {
                     this,
                     nameof(_on_SavesFolderButton_pressed)
                 );
+
+                GetNode(_snowButtonPath).Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_SnowButton_pressed)
+                );
+
+                GetNode(_stoneButtonPath).Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_StoneButton_pressed)
+                );
+
+                GetNode(_grassButtonPath).Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_GrassButton_pressed)
+                );
+
+                GetNode(_sandButtonPath).Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_SandButton_pressed)
+                );
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to connect signals");
@@ -246,8 +290,8 @@ namespace ProceduralGeneration.Scripts {
             } else if (Input.IsKeyPressed((int)KeyList.R)) {
                 _pointer.Reset(
                     _mapGen.Config.Width / 2,
-                    _mapGen.Config.Height / 2
-                    );
+                    _mapGen.Config.Height
+                );
                 GetTree().SetInputAsHandled();
             }
         }
@@ -278,14 +322,19 @@ namespace ProceduralGeneration.Scripts {
 
         private void _on_GenerateMapButton_button_up() {
             _mapGen.GenerateMap();
-            _pointer.Translation = new Vector3(
-                // ReSharper disable PossibleLossOfFraction
-                _mapGen.Config.Width / 2,
-                0,
-                _mapGen.Config.Height / 2
-                // ReSharper restore PossibleLossOfFraction
-            );
+            if (VectorsAreClose(_pointer.Translation, Vector3.Zero)) {
+                _pointer.Reset(
+                    _mapGen.Config.Width / 2,
+                    _mapGen.Config.Height
+                );
+            }
             _on_ShowNoisePreviewCheckBox_toggled(ShowNoiseMinimap);
+        }
+
+        private static bool VectorsAreClose(Vector3 left, Vector3 right) {
+            return Mathf.Abs(left.x - right.x) < Mathf.Epsilon &&
+                   Mathf.Abs(left.y - right.y) < Mathf.Epsilon &&
+                   Mathf.Abs(left.z - right.z) < Mathf.Epsilon;
         }
 
         private void _on_ClearButton_pressed() {
@@ -323,14 +372,14 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_LoadFileDialog_file_selected(string path) {
-            var mg   = GetChild<MapGenerator>(0);
             var json = SFile.ReadAllText(path);
-            mg.Config = JsonConvert.DeserializeObject<MapConfig>(json);
-            Debug.Assert(mg.Config != null, "mg.Config != null");
+            _mapGen.Config = JsonConvert.DeserializeObject<MapConfig>(json);
+            Debug.Assert(_mapGen.Config != null, "_mapGen.Config != null");
             _pointer.Translation = new Vector3(
-                (float)mg.Config.Width / 2,
+                // ReSharper disable once PossibleNullReferenceException
+                (float)_mapGen.Config.Width / 2,
                 0,
-                (float)mg.Config.Height / 2
+                (float)_mapGen.Config.Height / 2
             );
         }
 
@@ -351,7 +400,7 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_ShowWaterCheckBox_toggled(bool buttonPressed) {
-            ShowWater = buttonPressed;
+            _mapGen.ToggleWaterVisibility(buttonPressed);
         }
 
         private void _on_ShowNoisePreviewCheckBox_toggled(bool buttonPressed) {
@@ -362,6 +411,79 @@ namespace ProceduralGeneration.Scripts {
             Debug.Assert(0 <= value && value <= 1);
             _waterValueLabel.Text = $"Water Transparency: {value * 100,3}%";
             _mapGen?.SetWaterTransparency(value);
+        }
+
+        private void _on_SnowButton_pressed() => ConfigureColor(MeshSections.Snow);
+        private void _on_StoneButton_pressed() => ConfigureColor(MeshSections.Stone);
+        private void _on_GrassButton_pressed() => ConfigureColor(MeshSections.Grass);
+        private void _on_SandButton_pressed() => ConfigureColor(MeshSections.Sand);
+
+        private void ConfigureColor(MeshSections section) {
+            BreakExistingConnections();
+
+            _colorPickerDialog.Visible = false;
+            _colorPicker.Color         = _mapGen.GetMeshColor(section) ?? new Color(1, 1, 1);
+
+            _colorPicker.Connect(
+                "color_changed",
+                this,
+                GetActionName(section)
+            );
+
+            _colorPickerDialog.Show();
+        }
+
+        private void BreakExistingConnections() {
+            TryDisconnect(nameof(_on_SnowColor_changed));
+            TryDisconnect(nameof(_on_StoneColor_changed));
+            TryDisconnect(nameof(_on_GrassColor_changed));
+            TryDisconnect(nameof(_on_SandColor_changed));
+
+            void TryDisconnect(string name) {
+                if (_colorPicker.IsConnected("color_changed", this, name)) {
+                    _colorPicker.Disconnect("color_changed", this, name);
+                }
+            }
+        }
+
+        private void _on_SnowColor_changed(Color color) => ButtonColorChanged(MeshSections.Snow, color);
+        private void _on_StoneColor_changed(Color color) => ButtonColorChanged(MeshSections.Stone, color);
+        private void _on_GrassColor_changed(Color color) => ButtonColorChanged(MeshSections.Grass, color);
+        private void _on_SandColor_changed(Color color) => ButtonColorChanged(MeshSections.Sand, color);
+
+        private void ButtonColorChanged(MeshSections section, Color color) {
+            GetMaterial(section)?.SetShaderParam("selected_color", color);
+            _mapGen.SetMeshColor(section, color);
+        }
+
+        private ShaderMaterial GetMaterial(MeshSections section) {
+            switch (section) {
+                case MeshSections.Snow:  return _snowButton.Material as ShaderMaterial;
+                case MeshSections.Stone: return _stoneButton.Material as ShaderMaterial;
+                case MeshSections.Grass: return _grassButton.Material as ShaderMaterial;
+                case MeshSections.Sand:  return _sandButton.Material as ShaderMaterial;
+                default:                 throw new NotSupportedException($"Handle {section}");
+            }
+        }
+
+        private Action<Color> GetAction(MeshSections section) {
+            switch (section) {
+                case MeshSections.Snow:  return _on_SnowColor_changed;
+                case MeshSections.Stone: return _on_StoneColor_changed;
+                case MeshSections.Grass: return _on_GrassColor_changed;
+                case MeshSections.Sand:  return _on_SandColor_changed;
+                default:                 throw new NotSupportedException($"Handle {section}");
+            }
+        }
+
+        private string GetActionName(MeshSections section) {
+            switch (section) {
+                case MeshSections.Snow:  return nameof(_on_SnowColor_changed);
+                case MeshSections.Stone: return nameof(_on_StoneColor_changed);
+                case MeshSections.Grass: return nameof(_on_GrassColor_changed);
+                case MeshSections.Sand:  return nameof(_on_SandColor_changed);
+                default:                 throw new NotSupportedException($"Handle {section}");
+            }
         }
 
         #endregion

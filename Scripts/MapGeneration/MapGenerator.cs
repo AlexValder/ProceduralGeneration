@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Godot;
 using Newtonsoft.Json;
 using Serilog;
+#if DEBUG
 using Stopwatch = System.Diagnostics.Stopwatch;
+#endif
 
 [assembly: InternalsVisibleTo("Main")]
 
@@ -51,7 +53,6 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _lacunaritySpinBox.Value  = _config.Lacunarity   = value.Lacunarity;
                 _config.Correction        = value.Correction;
 
-                _allowNegativeCheckBox.Pressed       = _config.Correction.AllowNegative;
                 _correctionTypeOptionButton.Selected = (int)_config.Correction.Type;
 
                 _noise.Seed        = value.Seed;
@@ -77,7 +78,6 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _persistenceSlider          = GetNode<Slider>(_persistenceNodePath);
                 _octavesSlider              = GetNode<Slider>(_octavesNodePath);
                 _lacunaritySpinBox          = GetNode<SpinBox>(_lacunarityNodePath);
-                _allowNegativeCheckBox      = GetNode<CheckBox>(_allowNegativeNodePath);
                 _correctionTypeOptionButton = GetNode<OptionButton>(_correctionTypeNodePath);
 
                 _correctionTypeOptionButton.AddItem("Linear", 0);
@@ -126,6 +126,11 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 #if DEBUG
             sw.Stop();
             Log.Logger.Debug("Spent time calculating: {Elapsed}s", sw.Elapsed.TotalSeconds);
+
+            var newMin = map.Cast<float>().Min();
+            var newMax = map.Cast<float>().Max();
+
+            Log.Logger.Debug("Final: from {Min} to {Max}", newMin, newMax);
 #endif
             BuildPolygons(map);
         }
@@ -141,19 +146,18 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         private void CreateMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map, float min, float max) {
-            var diff = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude);
+            var move   = (max + min) / 2;
+            var rel    = 2 / (max - min);
+            var radius = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude) / 2;
 
-            var move = Math.Abs(max) - Math.Abs(min);
-            var mult = diff / (max - min);
-
-            Log.Logger.Debug("Move: {Move}, Mult: {Mult}", move, mult);
+            Log.Logger.Debug("Move: {Move}, Rel: {Rel}, Rad: {Radius}",
+                             move, rel, radius);
 
             for (var i = iBegin; i < iEnd; ++i)
             for (var j = jBegin; j < jEnd; ++j) {
-                map[i, j] =
-                    Config.Correction.GetCorrection(
-                        (map[i, j] + move) * mult + Config.MinAmplitude
-                    );
+                map[i, j] = Config.Correction.GetCorrection(
+                    (map[i, j] - move) * rel
+                ) * radius + move * rel;
             }
         }
 
@@ -252,7 +256,6 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             Config.Octaves                  = (int)_octavesSlider.Value;
             Config.Lacunarity               = (float)_lacunaritySpinBox.Value;
             Config.Correction.Type          = (CorrectionType)_correctionTypeOptionButton.Selected;
-            Config.Correction.AllowNegative = _allowNegativeCheckBox.Pressed;
 
             _noise.Seed        = Config.Seed;
             _noise.Octaves     = Config.Octaves;
@@ -305,6 +308,34 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             return _noise.GetImage(Config.Width, Config.Height);
         }
 
+        #region Mesh Colors
+
+        internal void SetMeshColor(MeshSections section, Color color) {
+            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
+            try {
+                mat?.SetShaderParam($"{section.ToString().ToLower()}_color", color);
+            }
+            catch (Exception ex) {
+                Log.Logger.Error(ex, "Failed to set land shader parameter");
+            }
+        }
+
+        internal Color? GetMeshColor(MeshSections section) {
+            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
+            try {
+                var obj = mat?.GetShaderParam($"{section.ToString().ToLower()}_color");
+                if (obj is Color color) {
+                    return color;
+                }
+            }
+            catch (Exception ex) {
+                Log.Logger.Error(ex, "Failed to get land shader parameter");
+            }
+            return null;
+        }
+
+        #endregion
+
         #region NodePaths and Nodes
 
         [Export] private NodePath _meshPath = new NodePath();
@@ -340,9 +371,6 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
         [Export] private NodePath _lacunarityNodePath = new NodePath();
         private SpinBox _lacunaritySpinBox;
-
-        [Export] private NodePath _allowNegativeNodePath = new NodePath();
-        private CheckBox _allowNegativeCheckBox;
 
         [Export] private NodePath _correctionTypeNodePath = new NodePath();
         private OptionButton _correctionTypeOptionButton;

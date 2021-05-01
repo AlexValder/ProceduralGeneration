@@ -10,7 +10,7 @@
 shader = ExtResource( 6 )
 shader_param/speed = Vector2( 0.25, 0.25 )
 shader_param/voronoi_scale = 200.0
-shader_param/noise_scale = 0.05
+shader_param/noise_scale = 0.08
 shader_param/alpha = 0.8
 shader_param/color = Color( 0.01, 0.586667, 1, 1 )
 shader_param/light_color = Color( 0.796078, 1, 0.890196, 1 )
@@ -34,7 +34,6 @@ _scaleNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGr
 _persistenceNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox/PersistenceSlider")
 _octavesNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox/OctavesSlider")
 _lacunarityNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/LacunaritySpinBox")
-_allowNegativeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/AllowNegativeCheckBox")
 _correctionTypeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/FunctionalCorrectionOptionButton")
 
 [node name="NoiseMapMiniMap" type="TextureRect" parent="."]
@@ -55,11 +54,11 @@ material/0 = null
 [node name="GUI" parent="." instance=ExtResource( 2 )]
 
 [node name="Pointer" type="Spatial" parent="."]
-transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 9.53674e-07 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 9.53674e-07 )
 script = ExtResource( 4 )
 
 [node name="Camera" type="Camera" parent="Pointer"]
-transform = Transform( 0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 2.2, 2.2, 2.2 )
+transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 2.2, 2.2 )
 current = true
 far = 500.0
 

@@ -6,14 +6,14 @@ using Serilog;
 
 namespace ProceduralGeneration.Scripts {
     public class Pointer : Spatial {
-        private const uint STEP = 1u;
+        private const float STEP = 0.5f;
         private const float PHI = Mathf.Pi / 24;
         private const float THETA = Mathf.Pi / 12;
 
         private const float ZOOM_MIN = 1f;
         private const float ZOOM_MAX = 10f;
         private const float ZOOM_STEP = .5f;
-        private static readonly Vector3 CameraPos = new Vector3(2.2f, 2.2f, 2.2f);
+        private static readonly Vector3 CameraPos = new Vector3(0, 2.2f, 2.2f);
 
         private static readonly ImmutableDictionary<KeyList, Vector3> Actions =
             new Dictionary<KeyList, Vector3> {
@@ -57,8 +57,9 @@ namespace ProceduralGeneration.Scripts {
         }
 
         public void Reset(int x = 0, int z = 0) {
-            Translation = new Vector3(x, 0, z);
-            Rotation    = new Vector3(0, Mathf.Pi, 0);
+            Translation         = new Vector3(x, 0, z);
+            Rotation            = Vector3.Zero;
+            _camera.Translation = CameraPos;
         }
 
         #region Godot Overrides
@@ -75,7 +76,7 @@ namespace ProceduralGeneration.Scripts {
 
         public override void _Input(InputEvent @event) {
             if (@event is InputEventKey e
-                && !e.IsPressed()
+                && e.IsPressed()
                 && Actions.ContainsKey((KeyList)e.Scancode)) {
                 Translate(Actions[(KeyList)e.Scancode]);
                 GetTree().SetInputAsHandled();
@@ -89,10 +90,12 @@ namespace ProceduralGeneration.Scripts {
                 switch (direction) {
                     case Direction.Horizontal:
                         RotateY(PHI * item2);
+                        // _camera.LookAt(GlobalTransform.origin, Vector3.Up);
                         GetTree().SetInputAsHandled();
                         break;
                     case Direction.Vertical:
                         RotateX(THETA * item2);
+                        // _camera.LookAt(GlobalTransform.origin, Vector3.Up);
                         GetTree().SetInputAsHandled();
                         break;
                     default:
