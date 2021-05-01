@@ -298,7 +298,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             }
 
             var mat = _waterMeshInstance.Mesh.SurfaceGetMaterial(0) as ShaderMaterial;
-            mat?.SetShaderParam("alpha", value);
+            mat?.SetShaderParam("alpha", _waterTransparency);
         }
 
         public Image GetNoiseImage() {

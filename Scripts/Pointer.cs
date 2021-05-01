@@ -5,9 +5,9 @@ using Godot;
 using Serilog;
 
 namespace ProceduralGeneration.Scripts {
-    public class Pointer : MeshInstance {
+    public class Pointer : Spatial {
         private const uint STEP = 1u;
-        private const float PHI = Mathf.Pi / 2;
+        private const float PHI = Mathf.Pi / 24;
         private const float THETA = Mathf.Pi / 12;
 
         private const float ZOOM_MIN = 1f;
@@ -20,21 +20,21 @@ namespace ProceduralGeneration.Scripts {
                 [KeyList.W] = new Vector3(0, 0, -STEP),
                 [KeyList.A] = new Vector3(-STEP, 0, 0),
                 [KeyList.S] = new Vector3(0, 0, STEP),
-                [KeyList.D] = new Vector3(STEP, 0, 0)
+                [KeyList.D] = new Vector3(STEP, 0, 0),
             }.ToImmutableDictionary();
 
         private static readonly ImmutableDictionary<KeyList, (Direction, int)> CameraRotation =
             new Dictionary<KeyList, (Direction, int)> {
-                [KeyList.Left]  = (Direction.Horizontal, 1),
-                [KeyList.Right] = (Direction.Horizontal, -1),
-                [KeyList.Up]    = (Direction.Vertical, 1),
-                [KeyList.Down]  = (Direction.Vertical, -1)
+                [KeyList.Q]  = (Direction.Horizontal, -1),
+                [KeyList.E] = (Direction.Horizontal, 1),
+                // [KeyList.Up]    = (Direction.Vertical, 1),
+                // [KeyList.Down]  = (Direction.Vertical, -1),
             }.ToImmutableDictionary();
 
         private static readonly ImmutableDictionary<ButtonList, Scroll> Scrolling =
             new Dictionary<ButtonList, Scroll> {
                 [ButtonList.WheelUp]   = Scroll.Further,
-                [ButtonList.WheelDown] = Scroll.Closer
+                [ButtonList.WheelDown] = Scroll.Closer,
             }.ToImmutableDictionary();
 
         private Camera _camera;
@@ -54,6 +54,11 @@ namespace ProceduralGeneration.Scripts {
         private enum Scroll {
             Closer,
             Further
+        }
+
+        public void Reset(int x = 0, int z = 0) {
+            Translation = new Vector3(x, 0, z);
+            Rotation    = new Vector3(0, Mathf.Pi, 0);
         }
 
         #region Godot Overrides
@@ -99,6 +104,7 @@ namespace ProceduralGeneration.Scripts {
             if (@event is InputEventMouseButton e2
                 && e2.IsPressed()
                 && Scrolling.ContainsKey((ButtonList)e2.ButtonIndex)) {
+
                 switch (Scrolling[(ButtonList)e2.ButtonIndex]) {
                     case Scroll.Closer:
                         if (_zoom < ZOOM_MAX) {

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using Godot;
 using Newtonsoft.Json;
 using ProceduralGeneration.Scripts.MapGeneration;
@@ -42,7 +43,7 @@ namespace ProceduralGeneration.Scripts {
         private Label _waterValueLabel;
 
         private MapGenerator _mapGen;
-        private MeshInstance _pointer;
+        private Pointer _pointer;
         private TextureRect _minimap;
         private OptionButton _memoryUnit;
 
@@ -54,10 +55,7 @@ namespace ProceduralGeneration.Scripts {
             }
         }
 
-        private float WaterTransparency {
-            get;
-            set;
-        }
+        private float WaterTransparency { get; set; }
 
         private bool ShowNoiseMinimap {
             get => _showNoiseMinimap;
@@ -102,14 +100,14 @@ namespace ProceduralGeneration.Scripts {
                 _waterValueLabel       = GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
                 _mapGen                = GetChild<MapGenerator>(0);
                 _minimap               = GetChild<TextureRect>(1);
-                _pointer               = GetChild<MeshInstance>(5);
+                _pointer               = GetChild<Pointer>(4);
                 _memoryUnit            = GetNode<OptionButton>($"{SystemMenuConfig}/MemoryHBox/MemoryMapOptionButton");
-                Debug.Assert(_persistenceValueLabel != null);
-                Debug.Assert(_octavesValueLabel != null);
-                Debug.Assert(_mapGen != null);
-                Debug.Assert(_minimap != null);
-                Debug.Assert(_pointer != null);
-                Debug.Assert(_memoryUnit != null);
+                Debug.Assert(_persistenceValueLabel != null, "Persistence Not Found");
+                Debug.Assert(_octavesValueLabel != null, "Octaves Not Found");
+                Debug.Assert(_mapGen != null, "MapGen Not Found");
+                Debug.Assert(_minimap != null, "Minimap Not Found");
+                Debug.Assert(_pointer != null, "Pointer Not Found");
+                Debug.Assert(_memoryUnit != null, "MemoryUnit Not Found");
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");
@@ -129,7 +127,7 @@ namespace ProceduralGeneration.Scripts {
 
             #region Signal Connection
 
-            // Connection Input signals to GUI elements 
+            // Connection Input signals to GUI elements
 
             try {
                 GetNode(_saveButton).Connect(
@@ -245,6 +243,12 @@ namespace ProceduralGeneration.Scripts {
             else if (Input.IsKeyPressed((int)KeyList.Enter)) {
                 _on_GenerateMapButton_button_up();
                 GetTree().SetInputAsHandled();
+            } else if (Input.IsKeyPressed((int)KeyList.R)) {
+                _pointer.Reset(
+                    _mapGen.Config.Width / 2,
+                    _mapGen.Config.Height / 2
+                    );
+                GetTree().SetInputAsHandled();
             }
         }
 
@@ -286,7 +290,7 @@ namespace ProceduralGeneration.Scripts {
 
         private void _on_ClearButton_pressed() {
             _mapGen.Clear();
-            _pointer.Translation = Vector3.Zero;
+            _pointer.Reset();
         }
 
         private void _on_SaveButton_pressed() {
