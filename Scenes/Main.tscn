@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://Scripts/MapGeneration/MapGenerator.cs" type="Script" id=1]
 [ext_resource path="res://Scenes/GUI.tscn" type="PackedScene" id=2]
@@ -10,23 +10,13 @@
 shader = ExtResource( 6 )
 shader_param/speed = Vector2( 0.25, 0.25 )
 shader_param/voronoi_scale = 200.0
-shader_param/noise_scale = 0.05
+shader_param/noise_scale = 0.08
 shader_param/alpha = 0.8
 shader_param/color = Color( 0.01, 0.586667, 1, 1 )
 shader_param/light_color = Color( 0.796078, 1, 0.890196, 1 )
 
 [sub_resource type="QuadMesh" id=2]
 material = SubResource( 1 )
-
-[sub_resource type="CubeMesh" id=3]
-size = Vector3( 0.05, 0.05, 0.05 )
-
-[sub_resource type="SpatialMaterial" id=4]
-flags_unshaded = true
-flags_vertex_lighting = true
-flags_no_depth_test = true
-flags_do_not_receive_shadows = true
-albedo_color = Color( 1, 0, 0, 1 )
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 3 )
@@ -44,7 +34,6 @@ _scaleNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGr
 _persistenceNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox/PersistenceSlider")
 _octavesNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox/OctavesSlider")
 _lacunarityNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/LacunaritySpinBox")
-_allowNegativeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/AllowNegativeCheckBox")
 _correctionTypeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/FunctionalCorrectionOptionButton")
 
 [node name="NoiseMapMiniMap" type="TextureRect" parent="."]
@@ -53,10 +42,6 @@ size_flags_vertical = 12
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 0.845448, 0.310478, -0.434535, 0, 0.813649, 0.581356, 0.534057, -0.491507, 0.687898, 0, -5.78528, 0 )
-shadow_enabled = true
 
 [node name="TestMesh" type="MeshInstance" parent="."]
 
@@ -68,14 +53,15 @@ material/0 = null
 
 [node name="GUI" parent="." instance=ExtResource( 2 )]
 
-[node name="Pointer" type="MeshInstance" parent="."]
-transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 9.53674e-07 )
-visible = false
-mesh = SubResource( 3 )
-material/0 = SubResource( 4 )
+[node name="Pointer" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 9.53674e-07 )
 script = ExtResource( 4 )
 
 [node name="Camera" type="Camera" parent="Pointer"]
-transform = Transform( 0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, 2.2, 2.2, 2.2 )
+transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 2.2, 2.2 )
 current = true
 far = 500.0
+
+[node name="DirectionalLight" type="DirectionalLight" parent="Pointer/Camera"]
+transform = Transform( -0.220187, -0.567089, 0.79368, 0.487729, 0.640637, 0.593047, -0.844771, 0.517682, 0.135526, -8.01463e-07, -5.35982, -6.68708 )
+shadow_enabled = true

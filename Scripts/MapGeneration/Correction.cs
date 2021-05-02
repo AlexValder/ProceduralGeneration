@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 
 namespace ProceduralGeneration.Scripts.MapGeneration {
     public enum CorrectionType {
@@ -10,20 +11,21 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
     public class Correction {
         private const float WATER = 0.001f;
         public CorrectionType Type { get; set; }
-        public bool AllowNegative { get; set; }
 
         public float GetCorrection(float initial) {
+            return CorFunction(initial);
+        }
+
+        private float CorFunction(float initial) {
             switch (Type) {
-                case CorrectionType.Linear: // Don't change the noise
-                    return AllowNegative ? initial : Mathf.Max(initial, -WATER);
+                case CorrectionType.Linear: // Don't change the noise\
+                    return initial;
                 case CorrectionType.Square: // f(x) = x^2 * sign(x)
-                    return AllowNegative ? Mathf.Pow(initial, 2) * Mathf.Sign(initial) :
-                        initial < WATER ? -WATER : Mathf.Pow(initial, 2);
+                    return Mathf.Pow(initial, 2) * Mathf.Sign(initial);
                 case CorrectionType.Cubic: // f(x) = x^3
-                    return AllowNegative ? Mathf.Pow(initial, 3) :
-                        initial < WATER ? -WATER : Mathf.Pow(initial, 3);
+                    return Mathf.Pow(initial, 3);
                 default:
-                    return 0;
+                    throw new NotSupportedException($"Please handle ${Type}");
             }
         }
     }
