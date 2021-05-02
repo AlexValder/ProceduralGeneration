@@ -149,15 +149,16 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             var move   = (max + min) / 2;
             var rel    = 2 / (max - min);
             var radius = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude) / 2;
+            var diff   = Config.MaxAmplitude - radius;
 
-            Log.Logger.Debug("Move: {Move}, Rel: {Rel}, Rad: {Radius}",
-                             move, rel, radius);
+            Log.Logger.Debug("Move: {Move}, Rel: {Rel}, Rad: {Radius}, Diff: {Diff}",
+                             move, rel, radius, diff);
 
             for (var i = iBegin; i < iEnd; ++i)
             for (var j = jBegin; j < jEnd; ++j) {
                 map[i, j] = Config.Correction.GetCorrection(
                     (map[i, j] - move) * rel
-                ) * radius + move * rel;
+                ) * radius + diff;
             }
         }
 

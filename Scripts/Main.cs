@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using Godot;
 using Newtonsoft.Json;
@@ -8,6 +7,7 @@ using Serilog;
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
+using Timer = System.Timers.Timer;
 
 namespace ProceduralGeneration.Scripts {
     public class Main : Spatial {
@@ -20,31 +20,28 @@ namespace ProceduralGeneration.Scripts {
         private readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
         private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer";
-        private static readonly NodePath LandmassMenuConfig = "GUI/TabContainer/Landmass/GridContainer";
         private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer";
-        // private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/GridContainer";
-        private static readonly NodePath GeneralControls = "GUI/ControlPanel/CenterContainer/GridContainer";
+        private static readonly NodePath GeneralControls = "GUI/ControlPanel/VBoxContainer/";
 
         private readonly NodePath _persistenceContainer = $"{MapMenuConfig}/MapParametersGrid/PersistenceHBox";
         private readonly NodePath _octavesContainer = $"{MapMenuConfig}/MapParametersGrid/OctavesHBox";
 
-        private readonly NodePath _snowButtonPath = $"{LandmassMenuConfig}/SnowButton";
-        private readonly NodePath _stoneButtonPath = $"{LandmassMenuConfig}/StoneButton";
-        private readonly NodePath _grassButtonPath = $"{LandmassMenuConfig}/GrassButton";
-        private readonly NodePath _sandButtonPath = $"{LandmassMenuConfig}/SandButton";
-        private readonly NodePath _colorButtonWindow = "GUI/TabContainer/Landmass/ColorPickWindow";
+        private readonly NodePath _snowButtonPath = $"{AdvancedMenuConfig}/GridContainer/SnowButton";
+        private readonly NodePath _stoneButtonPath = $"{AdvancedMenuConfig}/GridContainer/StoneButton";
+        private readonly NodePath _grassButtonPath = $"{AdvancedMenuConfig}/GridContainer/GrassButton";
+        private readonly NodePath _sandButtonPath = $"{AdvancedMenuConfig}/GridContainer/SandButton";
+        private readonly NodePath _colorButtonWindow = $"{AdvancedMenuConfig}/ColorPickWindow";
 
         private readonly NodePath _waterVisibility = $"{AdvancedMenuConfig}/ShowWaterCheckBox";
         private readonly NodePath _noiseMinimap = $"{AdvancedMenuConfig}/ShowNoisePreviewCheckBox";
 
-        // private readonly NodePath _taskNum = $"{SystemMenuConfig}/ParallelNumSpinBox";
-
-        private readonly NodePath _saveButton = $"{GeneralControls}/SaveButton";
-        private readonly NodePath _loadButton = $"{GeneralControls}/LoadButton";
-        private readonly NodePath _genMapButton = $"{GeneralControls}/GenerateMapButton";
-        private readonly NodePath _clearButton = $"{GeneralControls}/ClearButton";
-        private readonly NodePath _exitButton = $"{GeneralControls}/ExitButton";
-        private readonly NodePath _openSavesFolderButton = $"{GeneralControls}/SavesFolderButton";
+        private readonly NodePath _saveButton = $"{GeneralControls}/GridContainer/SaveButton";
+        private readonly NodePath _loadButton = $"{GeneralControls}/GridContainer/LoadButton";
+        private readonly NodePath _genMapButton = $"{GeneralControls}/GridContainer/GenerateMapButton";
+        private readonly NodePath _clearButton = $"{GeneralControls}/GridContainer/ClearButton";
+        private readonly NodePath _exitButton = $"{GeneralControls}/GridContainer/ExitButton";
+        private readonly NodePath _openSavesFolderButton = $"{GeneralControls}/GridContainer/SavesFolderButton";
+        private readonly NodePath _helpButtonPath = $"{GeneralControls}/HelpButton";
 
         private Label _persistenceValueLabel;
         private Label _octavesValueLabel;
@@ -53,7 +50,7 @@ namespace ProceduralGeneration.Scripts {
         private MapGenerator _mapGen;
         private Pointer _pointer;
         private TextureRect _minimap;
-        // private OptionButton _memoryUnit;
+        private FileDialog _loadSaveDialog;
 
         private Button _snowButton;
         private Button _stoneButton;
@@ -83,8 +80,11 @@ namespace ProceduralGeneration.Scripts {
             }
         }
 
+        public static bool InputProcessing { get; private set; } = true;
+
         private bool _showNoiseMinimap;
         private readonly Vector2 _minimapScale = new Vector2(256, 256);
+        private readonly Timer _garbageTimer = new Timer();
 
         #region Godot Overrides
 
@@ -93,6 +93,13 @@ namespace ProceduralGeneration.Scripts {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) => {
                 Log.Logger.Fatal(args.ExceptionObject as Exception, "Unhandled exception");
                 GetTree().Quit();
+            };
+
+            _garbageTimer.Enabled   =  true;
+            _garbageTimer.Interval  =  TimeSpan.FromMinutes(5).TotalMilliseconds;
+            _garbageTimer.AutoReset =  true;
+            _garbageTimer.Elapsed += (sender, args) => {
+                GC.Collect();
             };
 
             OS.WindowMaximized  = true;
@@ -104,14 +111,14 @@ namespace ProceduralGeneration.Scripts {
                 _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
                 _octavesValueLabel     = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
                 _waterValueLabel       = GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
-                _snowButton            = GetNode<Button>($"{LandmassMenuConfig}/SnowButton");
-                _stoneButton           = GetNode<Button>($"{LandmassMenuConfig}/StoneButton");
-                _grassButton           = GetNode<Button>($"{LandmassMenuConfig}/GrassButton");
-                _sandButton            = GetNode<Button>($"{LandmassMenuConfig}/SandButton");
+                _snowButton            = GetNode<Button>(_snowButtonPath);
+                _stoneButton           = GetNode<Button>(_stoneButtonPath);
+                _grassButton           = GetNode<Button>(_grassButtonPath);
+                _sandButton            = GetNode<Button>(_sandButtonPath);
                 _mapGen                = GetChild<MapGenerator>(0);
                 _minimap               = GetChild<TextureRect>(1);
                 _pointer               = GetChild<Pointer>(4);
-                // _memoryUnit            = GetNode<OptionButton>($"{SystemMenuConfig}/MemoryHBox/MemoryMapOptionButton");
+                _loadSaveDialog        = GetNode<FileDialog>($"{_loadButton}/FileDialog");
 
                 _colorPickerDialog = GetNode<Popup>(_colorButtonWindow);
                 _colorPicker       = GetNode<ColorPicker>($"{_colorButtonWindow}/ColorPicker");
@@ -133,6 +140,9 @@ namespace ProceduralGeneration.Scripts {
                 Log.Logger.Error(ex, "Failed to get node");
                 throw;
             }
+
+            var tabs = GetNode<TabContainer>("GUI/TabContainer/");
+            tabs.SetTabDisabled(2, true); // System Tab
 
             // Dropdown populating
 
@@ -170,10 +180,34 @@ namespace ProceduralGeneration.Scripts {
                     nameof(_on_LoadButton_pressed)
                 );
 
-                GetNode($"{_loadButton}/FileDialog").Connect(
+                _loadSaveDialog.Connect(
                     "file_selected",
                     this,
                     nameof(_on_LoadFileDialog_file_selected)
+                );
+
+                GetNode($"{_saveButton}/FileDialog").Connect(
+                    "about_to_show",
+                    this,
+                    nameof(StopInputProcessing)
+                );
+
+                _loadSaveDialog.Connect(
+                    "about_to_show",
+                    this,
+                    nameof(StopInputProcessing)
+                );
+
+                GetNode($"{_saveButton}/FileDialog").Connect(
+                    "popup_hide",
+                    this,
+                    nameof(StartInputProcessing)
+                );
+
+                _loadSaveDialog.Connect(
+                    "popup_hide",
+                    this,
+                    nameof(StartInputProcessing)
                 );
 
                 GetNode($"{_persistenceContainer}/PersistenceSlider").Connect(
@@ -192,6 +226,18 @@ namespace ProceduralGeneration.Scripts {
                     "text_changed",
                     _mapGen,
                     nameof(_mapGen._on_SeedInput_text_changed)
+                );
+
+                GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
+                    "focus_entered",
+                    this,
+                    nameof(StopInputProcessing)
+                );
+
+                GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
+                    "focus_exited",
+                    this,
+                    nameof(StartInputProcessing)
                 );
 
                 GetNode(_genMapButton).Connect(
@@ -259,6 +305,12 @@ namespace ProceduralGeneration.Scripts {
                     this,
                     nameof(_on_SandButton_pressed)
                 );
+
+                GetNode(_helpButtonPath).Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_HelpButton_pressed)
+                );
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to connect signals");
@@ -277,6 +329,10 @@ namespace ProceduralGeneration.Scripts {
         }
 
         public override void _Input(InputEvent @event) {
+            if (!InputProcessing) {
+                return;
+            }
+
             if (!(@event is InputEventKey)) {
                 return;
             }
@@ -366,9 +422,8 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_LoadButton_pressed() {
-            var fd = GetNode<FileDialog>($"{_loadButton}/FileDialog");
-            fd.CurrentDir = SPath.GetFullPath(_savesDirectory);
-            fd.PopupCentered();
+            _loadSaveDialog.CurrentDir = SPath.GetFullPath(_savesDirectory);
+            _loadSaveDialog.PopupCentered();
         }
 
         private void _on_LoadFileDialog_file_selected(string path) {
@@ -382,6 +437,10 @@ namespace ProceduralGeneration.Scripts {
                 (float)_mapGen.Config.Height / 2
             );
         }
+
+        private void StopInputProcessing() => InputProcessing = false;
+
+        private void StartInputProcessing() => InputProcessing = true;
 
         private void _on_ExitButton_pressed() {
             GetTree().Quit();
@@ -413,6 +472,11 @@ namespace ProceduralGeneration.Scripts {
             _mapGen?.SetWaterTransparency(value);
         }
 
+        private void _on_HelpButton_pressed() {
+            var help = GetNode<AcceptDialog>($"{_helpButtonPath}/AcceptDialog");
+            help.PopupCentered();
+        }
+
         private void _on_SnowButton_pressed() => ConfigureColor(MeshSections.Snow);
         private void _on_StoneButton_pressed() => ConfigureColor(MeshSections.Stone);
         private void _on_GrassButton_pressed() => ConfigureColor(MeshSections.Grass);
@@ -421,8 +485,8 @@ namespace ProceduralGeneration.Scripts {
         private void ConfigureColor(MeshSections section) {
             BreakExistingConnections();
 
-            _colorPickerDialog.Visible = false;
-            _colorPicker.Color         = _mapGen.GetMeshColor(section) ?? new Color(1, 1, 1);
+            _colorPickerDialog.PopupCentered();
+            _colorPicker.Color = _mapGen.GetMeshColor(section) ?? new Color(1, 1, 1);
 
             _colorPicker.Connect(
                 "color_changed",
@@ -462,16 +526,6 @@ namespace ProceduralGeneration.Scripts {
                 case MeshSections.Stone: return _stoneButton.Material as ShaderMaterial;
                 case MeshSections.Grass: return _grassButton.Material as ShaderMaterial;
                 case MeshSections.Sand:  return _sandButton.Material as ShaderMaterial;
-                default:                 throw new NotSupportedException($"Handle {section}");
-            }
-        }
-
-        private Action<Color> GetAction(MeshSections section) {
-            switch (section) {
-                case MeshSections.Snow:  return _on_SnowColor_changed;
-                case MeshSections.Stone: return _on_StoneColor_changed;
-                case MeshSections.Grass: return _on_GrassColor_changed;
-                case MeshSections.Sand:  return _on_SandColor_changed;
                 default:                 throw new NotSupportedException($"Handle {section}");
             }
         }

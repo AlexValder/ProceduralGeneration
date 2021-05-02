@@ -25,10 +25,8 @@ namespace ProceduralGeneration.Scripts {
 
         private static readonly ImmutableDictionary<KeyList, (Direction, int)> CameraRotation =
             new Dictionary<KeyList, (Direction, int)> {
-                [KeyList.Q]  = (Direction.Horizontal, -1),
-                [KeyList.E] = (Direction.Horizontal, 1),
-                // [KeyList.Up]    = (Direction.Vertical, 1),
-                // [KeyList.Down]  = (Direction.Vertical, -1),
+                [KeyList.Q]  = (Direction.Horizontal, 1),
+                [KeyList.E] = (Direction.Horizontal, -1),
             }.ToImmutableDictionary();
 
         private static readonly ImmutableDictionary<ButtonList, Scroll> Scrolling =
@@ -75,6 +73,10 @@ namespace ProceduralGeneration.Scripts {
         }
 
         public override void _Input(InputEvent @event) {
+            if (!Main.InputProcessing) {
+                return;
+            }
+
             if (@event is InputEventKey e
                 && e.IsPressed()
                 && Actions.ContainsKey((KeyList)e.Scancode)) {
