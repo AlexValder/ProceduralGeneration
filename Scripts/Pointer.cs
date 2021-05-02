@@ -7,7 +7,7 @@ using Serilog;
 namespace ProceduralGeneration.Scripts {
     public class Pointer : Spatial {
         private const float STEP = 0.5f;
-        private const float PHI = Mathf.Pi / 24;
+        private const float PHI = Mathf.Pi / 36;
         private const float THETA = Mathf.Pi / 12;
 
         private const float ZOOM_MIN = 1f;

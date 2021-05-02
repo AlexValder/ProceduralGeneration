@@ -7,7 +7,6 @@ using Serilog;
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
-using Timer = System.Timers.Timer;
 
 namespace ProceduralGeneration.Scripts {
     public class Main : Spatial {
@@ -35,6 +34,11 @@ namespace ProceduralGeneration.Scripts {
         private readonly NodePath _waterVisibility = $"{AdvancedMenuConfig}/ShowWaterCheckBox";
         private readonly NodePath _noiseMinimap = $"{AdvancedMenuConfig}/ShowNoisePreviewCheckBox";
 
+        private readonly NodePath _snowBorderPath = $"{AdvancedMenuConfig}/GridContainer/SnowSpinBox";
+        private readonly NodePath _stoneBorderPath = $"{AdvancedMenuConfig}/GridContainer/StoneSpinBox";
+        private readonly NodePath _grassBorderPath = $"{AdvancedMenuConfig}/GridContainer/GrassSpinBox";
+        private readonly NodePath _resetDefaultPath = $"{AdvancedMenuConfig}/ResetButton";
+
         private readonly NodePath _saveButton = $"{GeneralControls}/GridContainer/SaveButton";
         private readonly NodePath _loadButton = $"{GeneralControls}/GridContainer/LoadButton";
         private readonly NodePath _genMapButton = $"{GeneralControls}/GridContainer/GenerateMapButton";
@@ -46,6 +50,10 @@ namespace ProceduralGeneration.Scripts {
         private Label _persistenceValueLabel;
         private Label _octavesValueLabel;
         private Label _waterValueLabel;
+
+        private SpinBox _snowBorder;
+        private SpinBox _stoneBorder;
+        private SpinBox _grassBorder;
 
         private MapGenerator _mapGen;
         private Pointer _pointer;
@@ -84,7 +92,6 @@ namespace ProceduralGeneration.Scripts {
 
         private bool _showNoiseMinimap;
         private readonly Vector2 _minimapScale = new Vector2(256, 256);
-        private readonly Timer _garbageTimer = new Timer();
 
         #region Godot Overrides
 
@@ -93,13 +100,6 @@ namespace ProceduralGeneration.Scripts {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) => {
                 Log.Logger.Fatal(args.ExceptionObject as Exception, "Unhandled exception");
                 GetTree().Quit();
-            };
-
-            _garbageTimer.Enabled   =  true;
-            _garbageTimer.Interval  =  TimeSpan.FromMinutes(5).TotalMilliseconds;
-            _garbageTimer.AutoReset =  true;
-            _garbageTimer.Elapsed += (sender, args) => {
-                GC.Collect();
             };
 
             OS.WindowMaximized  = true;
@@ -123,6 +123,10 @@ namespace ProceduralGeneration.Scripts {
                 _colorPickerDialog = GetNode<Popup>(_colorButtonWindow);
                 _colorPicker       = GetNode<ColorPicker>($"{_colorButtonWindow}/ColorPicker");
 
+                _snowBorder  = GetNode<SpinBox>(_snowBorderPath);
+                _stoneBorder = GetNode<SpinBox>(_stoneBorderPath);
+                _grassBorder = GetNode<SpinBox>(_grassBorderPath);
+
                 Debug.Assert(_persistenceValueLabel != null, "Persistence Not Found");
                 Debug.Assert(_octavesValueLabel != null, "Octaves Not Found");
                 Debug.Assert(_mapGen != null, "MapGen Not Found");
@@ -135,6 +139,9 @@ namespace ProceduralGeneration.Scripts {
                 Debug.Assert(_sandButton != null, "Sand Button Not Found");
                 Debug.Assert(_colorPickerDialog != null, "Color Picker Dialog Not Found");
                 Debug.Assert(_colorPicker != null, "Color Picker Not Found");
+                Debug.Assert(_snowBorder != null, "Snow Border Not Found");
+                Debug.Assert(_stoneBorder != null, "Stone Border Not Found");
+                Debug.Assert(_grassBorder != null, "Grass Border Not Found");
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");
@@ -310,6 +317,30 @@ namespace ProceduralGeneration.Scripts {
                     "pressed",
                     this,
                     nameof(_on_HelpButton_pressed)
+                );
+
+                _snowBorder.Connect(
+                    "value_changed",
+                    this,
+                    nameof(_on_SnowBorderValue_changed)
+                );
+
+                _stoneBorder.Connect(
+                    "value_changed",
+                    this,
+                    nameof(_on_StoneBorderValue_changed)
+                );
+
+                _grassBorder.Connect(
+                    "value_changed",
+                    this,
+                    nameof(_on_GrassBorderValue_changed)
+                );
+
+                GetNode(_resetDefaultPath).Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_ResetToDefaults_pressed)
                 );
             }
             catch (Exception ex) {
@@ -530,13 +561,48 @@ namespace ProceduralGeneration.Scripts {
             }
         }
 
-        private string GetActionName(MeshSections section) {
+        private static string GetActionName(MeshSections section) {
             switch (section) {
                 case MeshSections.Snow:  return nameof(_on_SnowColor_changed);
                 case MeshSections.Stone: return nameof(_on_StoneColor_changed);
                 case MeshSections.Grass: return nameof(_on_GrassColor_changed);
                 case MeshSections.Sand:  return nameof(_on_SandColor_changed);
                 default:                 throw new NotSupportedException($"Handle {section}");
+            }
+        }
+
+        private void _on_SnowBorderValue_changed(double value) {
+            if (value <= _stoneBorder.Value) {
+                _stoneBorder.Value = value - _stoneBorder.Step;
+            }
+
+            _mapGen.SetBorderValue(MeshSections.Snow, value);
+        }
+        private void _on_StoneBorderValue_changed(double value) {
+            if (value <= _grassBorder.Value) {
+                _grassBorder.Value = value - _grassBorder.Step;
+            } else if (value >= _snowBorder.Value) {
+                _snowBorder.Value = value + _snowBorder.Step;
+            }
+
+            _mapGen.SetBorderValue(MeshSections.Stone, value);
+        }
+        private void _on_GrassBorderValue_changed(double value) {
+            if (value >= _stoneBorder.Value) {
+                _stoneBorder.Value = value + _stoneBorder.Step;
+            }
+
+            _mapGen.SetBorderValue(MeshSections.Grass, value);
+        }
+
+        private void _on_ResetToDefaults_pressed() {
+            _snowBorder.Value  = ShaderDefaults.DefaultBorders[MeshSections.Snow];
+            _stoneBorder.Value = ShaderDefaults.DefaultBorders[MeshSections.Stone];
+            _grassBorder.Value = ShaderDefaults.DefaultBorders[MeshSections.Grass];
+
+            foreach (var key in ShaderDefaults.DefaultColors.Keys) {
+                GetMaterial(key).SetShaderParam("selected_color", ShaderDefaults.DefaultColors[key]);
+                _mapGen.SetMeshColor(key, ShaderDefaults.DefaultColors[key]);
             }
         }
 

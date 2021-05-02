@@ -335,6 +335,30 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             return null;
         }
 
+        internal void SetBorderValue(MeshSections section, double value) {
+            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
+            try {
+                mat?.SetShaderParam($"{section.ToString().ToLower()}_value", value);
+            }
+            catch (Exception ex) {
+                Log.Logger.Error(ex, "Failed to set land shader parameter");
+            }
+        }
+
+        internal double? GetBorderValue(MeshSections section) {
+            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
+            try {
+                var obj = mat?.GetShaderParam($"{section.ToString().ToLower()}_value");
+                if (obj is double value) {
+                    return value;
+                }
+            }
+            catch (Exception ex) {
+                Log.Logger.Error(ex, "Failed to get land shader parameter");
+            }
+            return null;
+        }
+
         #endregion
 
         #region NodePaths and Nodes
