@@ -8,6 +8,7 @@ using Serilog;
 #if DEBUG
 using Stopwatch = System.Diagnostics.Stopwatch;
 #endif
+using MeshSections = ProceduralGeneration.Scripts.MapGeneration.ShaderSettings.MeshSections;
 
 [assembly: InternalsVisibleTo("Main")]
 
@@ -25,6 +26,8 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         public float Lacunarity { get; set; }
         public Correction Correction { get; set; } = new Correction();
 
+        public ShaderSettings ShaderSettings { get; set; } = new ShaderSettings();
+
         public override string ToString() {
             return JsonConvert.SerializeObject(this);
         }
@@ -34,6 +37,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         private readonly MapConfig _config = new MapConfig();
 
         private readonly OpenSimplexNoise _noise = new OpenSimplexNoise();
+        private ShaderMaterial _landShader;
         private bool _shouldEmptySeed;
         private bool _toggleWater = true;
         private float _waterTransparency = 0.8f;
@@ -52,8 +56,17 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _octavesSlider.Value      = _config.Octaves      = value.Octaves;
                 _lacunaritySpinBox.Value  = _config.Lacunarity   = value.Lacunarity;
                 _config.Correction        = value.Correction;
+                _config.ShaderSettings    = value.ShaderSettings;
 
                 _correctionTypeOptionButton.Selected = (int)_config.Correction.Type;
+
+                foreach (var pair in _config.ShaderSettings.Colors) {
+                    _landShader.SetShaderParam(ShaderSettings.ColorValue(pair.Key), pair.Value);
+                }
+
+                foreach (var pair in _config.ShaderSettings.Borders) {
+                    _landShader.SetShaderParam(ShaderSettings.BorderValue(pair.Key), pair.Value);
+                }
 
                 _noise.Seed        = value.Seed;
                 _noise.Lacunarity  = value.Lacunarity;
@@ -86,6 +99,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
                 _meshInstance      = GetNode<MeshInstance>(_meshPath);
                 _waterMeshInstance = _meshInstance.GetChild<MeshInstance>(0);
+                _landShader        = GD.Load<ShaderMaterial>("Resources/land.tres");
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to initialize MapGenerator");
@@ -227,8 +241,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             st.GenerateNormals();
             st.Index();
             var mesh = st.Commit();
-            var mat  = GD.Load<ShaderMaterial>("Resources/land.tres");
-            mesh.SurfaceSetMaterial(0, mat);
+            mesh.SurfaceSetMaterial(0, _landShader);
             _meshInstance.Mesh = mesh;
         }
 
@@ -312,9 +325,9 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         #region Mesh Colors
 
         internal void SetMeshColor(MeshSections section, Color color) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
             try {
-                mat?.SetShaderParam($"{section.ToString().ToLower()}_color", color);
+                _landShader.SetShaderParam(ShaderSettings.ColorValue(section), color);
+                _config.ShaderSettings.Colors[section] = color;
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to set land shader parameter");
@@ -322,23 +335,16 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         internal Color? GetMeshColor(MeshSections section) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
-            try {
-                var obj = mat?.GetShaderParam($"{section.ToString().ToLower()}_color");
-                if (obj is Color color) {
-                    return color;
-                }
-            }
-            catch (Exception ex) {
-                Log.Logger.Error(ex, "Failed to get land shader parameter");
+            if (_config.ShaderSettings.Colors.TryGetValue(section, out var color)) {
+                return color;
             }
             return null;
         }
 
         internal void SetBorderValue(MeshSections section, double value) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
             try {
-                mat?.SetShaderParam($"{section.ToString().ToLower()}_value", value);
+                _landShader.SetShaderParam(ShaderSettings.BorderValue(section), value);
+                _config.ShaderSettings.Borders[section] = value;
             }
             catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to set land shader parameter");
@@ -346,15 +352,8 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         internal double? GetBorderValue(MeshSections section) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
-            try {
-                var obj = mat?.GetShaderParam($"{section.ToString().ToLower()}_value");
-                if (obj is double value) {
-                    return value;
-                }
-            }
-            catch (Exception ex) {
-                Log.Logger.Error(ex, "Failed to get land shader parameter");
+            if (_config.ShaderSettings.Borders.TryGetValue(section, out var value)) {
+                return value;
             }
             return null;
         }

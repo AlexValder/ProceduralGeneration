@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
 using Newtonsoft.Json;
@@ -7,6 +8,7 @@ using Serilog;
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
+using MeshSections = ProceduralGeneration.Scripts.MapGeneration.ShaderSettings.MeshSections;
 
 namespace ProceduralGeneration.Scripts {
     public class Main : Spatial {
@@ -152,7 +154,8 @@ namespace ProceduralGeneration.Scripts {
                 throw;
             }
 
-//            var tabs = GetNode<TabContainer>("GUI/TabContainer/");
+            var tabs = GetNode<TabContainer>("GUI/TabContainer/");
+            tabs.SetTabDisabled(2, true);
 
             // Dropdown populating
 
@@ -544,7 +547,11 @@ namespace ProceduralGeneration.Scripts {
             }
         }
 
-        private void _on_SnowColor_changed(Color color) => ButtonColorChanged(MeshSections.Snow, color);
+        private void _on_SnowColor_changed(Color color) {
+            ButtonColorChanged(MeshSections.Snow, color);
+
+        }
+
         private void _on_StoneColor_changed(Color color) => ButtonColorChanged(MeshSections.Stone, color);
         private void _on_GrassColor_changed(Color color) => ButtonColorChanged(MeshSections.Grass, color);
         private void _on_SandColor_changed(Color color) => ButtonColorChanged(MeshSections.Sand, color);
@@ -599,13 +606,13 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_ResetToDefaults_pressed() {
-            _snowBorder.Value  = ShaderDefaults.DefaultBorders[MeshSections.Snow];
-            _stoneBorder.Value = ShaderDefaults.DefaultBorders[MeshSections.Stone];
-            _grassBorder.Value = ShaderDefaults.DefaultBorders[MeshSections.Grass];
+            _snowBorder.Value  = ShaderSettings.DefaultBorders[MeshSections.Snow];
+            _stoneBorder.Value = ShaderSettings.DefaultBorders[MeshSections.Stone];
+            _grassBorder.Value = ShaderSettings.DefaultBorders[MeshSections.Grass];
 
-            foreach (var key in ShaderDefaults.DefaultColors.Keys) {
-                GetMaterial(key).SetShaderParam("selected_color", ShaderDefaults.DefaultColors[key]);
-                _mapGen.SetMeshColor(key, ShaderDefaults.DefaultColors[key]);
+            foreach (var pair in ShaderSettings.DefaultColors) {
+                GetMaterial(pair.Key).SetShaderParam("selected_color", pair.Value);
+                _mapGen.SetMeshColor(pair.Key, pair.Value);
             }
         }
 
