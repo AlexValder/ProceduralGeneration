@@ -20,6 +20,7 @@ namespace ProceduralGeneration.Scripts {
 #endif
         private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer";
         private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer";
+        private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/GridContainer/";
         private static readonly NodePath GeneralControls = "GUI/ControlPanel/VBoxContainer/";
 
         private readonly NodePath _persistenceContainer = $"{MapMenuConfig}/MapParametersGrid/PersistenceHBox";
@@ -33,6 +34,8 @@ namespace ProceduralGeneration.Scripts {
 
         private readonly NodePath _waterVisibility = $"{AdvancedMenuConfig}/ShowWaterCheckBox";
         private readonly NodePath _noiseMinimap = $"{AdvancedMenuConfig}/ShowNoisePreviewCheckBox";
+
+        private readonly NodePath _taskNum = $"{SystemMenuConfig}/ParallelNumSpinBox";
 
         private readonly NodePath _snowBorderPath = $"{AdvancedMenuConfig}/GridContainer/SnowSpinBox";
         private readonly NodePath _stoneBorderPath = $"{AdvancedMenuConfig}/GridContainer/StoneSpinBox";
@@ -58,6 +61,7 @@ namespace ProceduralGeneration.Scripts {
         private MapGenerator _mapGen;
         private Pointer _pointer;
         private TextureRect _minimap;
+        private OptionButton _memoryUnit;
         private FileDialog _loadSaveDialog;
 
         private Button _snowButton;
@@ -148,19 +152,18 @@ namespace ProceduralGeneration.Scripts {
                 throw;
             }
 
-            var tabs = GetNode<TabContainer>("GUI/TabContainer/");
-            tabs.SetTabDisabled(2, true); // System Tab
+//            var tabs = GetNode<TabContainer>("GUI/TabContainer/");
 
             // Dropdown populating
 
-            // try {
-            //     _memoryUnit.AddItem("KiB", 0);
-            //     _memoryUnit.AddItem("MiB", 1);
-            //     _memoryUnit.AddItem("GiB", 2);
-            // }
-            // catch (Exception ex) {
-            //     Log.Logger.Error(ex, "Failed to populate dropdown");
-            // }
+            try {
+                _memoryUnit.AddItem("KiB", 0);
+                _memoryUnit.AddItem("MiB", 1);
+                _memoryUnit.AddItem("GiB", 2);
+            }
+            catch (Exception ex) {
+                Log.Logger.Error(ex, "Failed to populate dropdown");
+            }
 
             #region Signal Connection
 

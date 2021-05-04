@@ -9,7 +9,6 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
     }
 
     public class Correction {
-        private const float WATER = 0.001f;
         public CorrectionType Type { get; set; }
 
         public float GetCorrection(float initial) {
@@ -18,7 +17,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
         private float CorFunction(float initial) {
             switch (Type) {
-                case CorrectionType.Linear: // Don't change the noise\
+                case CorrectionType.Linear: // Don't change the noise
                     return initial;
                 case CorrectionType.Square: // f(x) = x^2 * sign(x)
                     return Mathf.Pow(initial, 2) * Mathf.Sign(initial);
