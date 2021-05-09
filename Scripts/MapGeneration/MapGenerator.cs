@@ -59,6 +59,8 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _config.ShaderSettings    = value.ShaderSettings;
 
                 _correctionTypeOptionButton.Selected = (int)_config.Correction.Type;
+                _config.Correction.MapWidth          = _config.Width * _config.Tesselation / 2;
+                _config.Correction.MapHeight         = _config.Height * _config.Tesselation / 2;
 
                 foreach (var pair in _config.ShaderSettings.Colors) {
                     _landShader.SetShaderParam(ShaderSettings.ColorValue(pair.Key), pair.Value);
@@ -260,16 +262,20 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _shouldEmptySeed   = true;
             }
 
-            Config.Width           = (int)_widthSpinBox.Value;
-            Config.Height          = (int)_heightSpinBox.Value;
-            Config.Tesselation     = (int)_tesselationSpinBox.Value;
-            Config.MinAmplitude    = (float)_minSpinBox.Value;
-            Config.MaxAmplitude    = (float)_maxSpinBox.Value;
-            Config.Scale           = (float)_scaleSpinBox.Value;
-            Config.Persistence     = (float)_persistenceSlider.Value;
-            Config.Octaves         = (int)_octavesSlider.Value;
-            Config.Lacunarity      = (float)_lacunaritySpinBox.Value;
-            Config.Correction.Type = (CorrectionType)_correctionTypeOptionButton.Selected;
+            Config.Width                = (int)_widthSpinBox.Value;
+            Config.Height               = (int)_heightSpinBox.Value;
+            Config.Tesselation          = (int)_tesselationSpinBox.Value;
+            Config.MinAmplitude         = (float)_minSpinBox.Value;
+            Config.MaxAmplitude         = (float)_maxSpinBox.Value;
+            Config.Scale                = (float)_scaleSpinBox.Value;
+            Config.Persistence          = (float)_persistenceSlider.Value;
+            Config.Octaves              = (int)_octavesSlider.Value;
+            Config.Lacunarity           = (float)_lacunaritySpinBox.Value;
+            Config.Correction.Type      = (CorrectionType)_correctionTypeOptionButton.Selected;
+            // ReSharper disable PossibleLossOfFraction
+            Config.Correction.MapWidth  = Config.Width * Config.Tesselation / 2;
+            Config.Correction.MapHeight = Config.Height * Config.Tesselation / 2;
+            // ReSharper restore PossibleLossOfFraction
 
             _noise.Seed        = Config.Seed;
             _noise.Octaves     = Config.Octaves;
