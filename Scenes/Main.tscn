@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://Scripts/MapGeneration/MapGenerator.cs" type="Script" id=1]
 [ext_resource path="res://Scenes/GUI.tscn" type="PackedScene" id=2]
@@ -18,6 +18,19 @@ shader_param/light_color = Color( 0.796078, 1, 0.890196, 1 )
 [sub_resource type="QuadMesh" id=2]
 material = SubResource( 1 )
 
+[sub_resource type="ProceduralSky" id=3]
+
+[sub_resource type="Environment" id=4]
+background_mode = 1
+background_sky = SubResource( 3 )
+background_color = Color( 0.396078, 0.552941, 0.588235, 1 )
+ambient_light_color = Color( 1, 1, 1, 1 )
+ambient_light_sky_contribution = 0.5
+fog_enabled = true
+fog_color = Color( 0.396078, 0.552941, 0.588235, 1 )
+fog_depth_begin = 20.0
+fog_depth_end = 60.0
+
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 3 )
 
@@ -34,9 +47,12 @@ _scaleNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGr
 _persistenceNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox/PersistenceSlider")
 _octavesNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox/OctavesSlider")
 _lacunarityNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/LacunaritySpinBox")
+_periodNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PeriodSpinBox")
 _correctionTypeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/FunctionalCorrectionOptionButton")
 
 [node name="NoiseMapMiniMap" type="TextureRect" parent="."]
+margin_right = 64.0
+margin_bottom = 64.0
 size_flags_horizontal = 12
 size_flags_vertical = 12
 __meta__ = {
@@ -65,3 +81,6 @@ far = 500.0
 [node name="DirectionalLight" type="DirectionalLight" parent="Pointer/Camera"]
 transform = Transform( -0.220187, -0.567089, 0.79368, 0.487729, 0.640637, 0.593047, -0.844771, 0.517682, 0.135526, -8.01463e-07, -5.35982, -6.68708 )
 shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 4 )

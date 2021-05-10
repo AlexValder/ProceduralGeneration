@@ -8,6 +8,7 @@ using Serilog;
 #if DEBUG
 using Stopwatch = System.Diagnostics.Stopwatch;
 #endif
+using MeshSections = ProceduralGeneration.Scripts.MapGeneration.ShaderSettings.MeshSections;
 
 [assembly: InternalsVisibleTo("Main")]
 
@@ -23,7 +24,10 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         public float Persistence { get; set; }
         public int Octaves { get; set; }
         public float Lacunarity { get; set; }
+        public float Period { get; set; }
         public Correction Correction { get; set; } = new Correction();
+
+        public ShaderSettings ShaderSettings { get; set; } = new ShaderSettings();
 
         public override string ToString() {
             return JsonConvert.SerializeObject(this);
@@ -34,6 +38,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         private readonly MapConfig _config = new MapConfig();
 
         private readonly OpenSimplexNoise _noise = new OpenSimplexNoise();
+        private ShaderMaterial _landShader;
         private bool _shouldEmptySeed;
         private bool _toggleWater = true;
         private float _waterTransparency = 0.8f;
@@ -51,14 +56,27 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _persistenceSlider.Value  = _config.Persistence  = value.Persistence;
                 _octavesSlider.Value      = _config.Octaves      = value.Octaves;
                 _lacunaritySpinBox.Value  = _config.Lacunarity   = value.Lacunarity;
+                _periodSpinBox.Value      = _config.Period       = value.Period;
                 _config.Correction        = value.Correction;
+                _config.ShaderSettings    = value.ShaderSettings;
 
                 _correctionTypeOptionButton.Selected = (int)_config.Correction.Type;
+                _config.Correction.MapWidth          = _config.Width * _config.Tesselation / 2;
+                _config.Correction.MapHeight         = _config.Height * _config.Tesselation / 2;
+
+                foreach (var pair in _config.ShaderSettings.Colors) {
+                    _landShader.SetShaderParam(ShaderSettings.ColorValue(pair.Key), pair.Value);
+                }
+
+                foreach (var pair in _config.ShaderSettings.Borders) {
+                    _landShader.SetShaderParam(ShaderSettings.BorderValue(pair.Key), pair.Value);
+                }
 
                 _noise.Seed        = value.Seed;
                 _noise.Lacunarity  = value.Lacunarity;
                 _noise.Persistence = value.Persistence;
                 _noise.Octaves     = value.Octaves;
+                _noise.Period      = value.Period;
 
                 CreateMap();
             }
@@ -78,6 +96,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _persistenceSlider          = GetNode<Slider>(_persistenceNodePath);
                 _octavesSlider              = GetNode<Slider>(_octavesNodePath);
                 _lacunaritySpinBox          = GetNode<SpinBox>(_lacunarityNodePath);
+                _periodSpinBox              = GetNode<SpinBox>(_periodNodePath);
                 _correctionTypeOptionButton = GetNode<OptionButton>(_correctionTypeNodePath);
 
                 _correctionTypeOptionButton.AddItem("Linear", 0);
@@ -86,8 +105,8 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
                 _meshInstance      = GetNode<MeshInstance>(_meshPath);
                 _waterMeshInstance = _meshInstance.GetChild<MeshInstance>(0);
-            }
-            catch (Exception ex) {
+                _landShader        = GD.Load<ShaderMaterial>("Resources/land.tres");
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to initialize MapGenerator");
             }
         }
@@ -136,37 +155,38 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         private void FillMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map) {
-            for (var i = iBegin; i < iEnd; ++i)
-            for (var j = jBegin; j < jEnd; ++j) {
-                map[i, j] = _noise.GetNoise2d(
-                    i / (Config.Scale * Config.Tesselation),
-                    j / (Config.Scale * Config.Tesselation)
-                );
+            for (var i = iBegin; i < iEnd; ++i) {
+                for (var j = jBegin; j < jEnd; ++j) {
+                    map[i, j] = _noise.GetNoise2d(
+                        i / (Config.Scale * Config.Tesselation),
+                        j / (Config.Scale * Config.Tesselation)
+                    );
+                }
             }
         }
 
         private void CreateMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map, float min, float max) {
             var move   = (max + min) / 2;
-            var rel    = 2 / (max - min);
+            var rel    = 2 / Mathf.Abs(max - min);
             var radius = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude) / 2;
             var diff   = Config.MaxAmplitude - radius;
 
             Log.Logger.Debug("Move: {Move}, Rel: {Rel}, Rad: {Radius}, Diff: {Diff}",
                              move, rel, radius, diff);
 
-            for (var i = iBegin; i < iEnd; ++i)
-            for (var j = jBegin; j < jEnd; ++j) {
-                map[i, j] = Config.Correction.GetCorrection(
-                    (map[i, j] - move) * rel
-                ) * radius + diff;
+            for (var i = iBegin; i < iEnd; ++i) {
+                for (var j = jBegin; j < jEnd; ++j) {
+                    map[i, j] = Config.Correction.GetCorrection(
+                        (map[i, j] - move) * rel
+                    ) * radius + diff;
+                }
             }
         }
 
         public void GenerateMap() {
             try {
                 PopulateConfig();
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to populate config");
             }
 
@@ -189,46 +209,46 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
             // Generate "Land"
 
-            for (var i = 0; i < map.GetLength(0) - 1; ++i)
-            for (var j = 0; j < map.GetLength(1) - 1; ++j) {
-                st.AddVertex(new Vector3(
-                                 (float)i / Config.Tesselation,
-                                 map[i, j],
-                                 (float)j / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)(i + 1) / Config.Tesselation,
-                                 map[i + 1, j],
-                                 (float)j / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)(i + 1) / Config.Tesselation,
-                                 map[i + 1, j + 1],
-                                 (float)(j + 1) / Config.Tesselation
-                             ));
+            for (var i = 0; i < map.GetLength(0) - 1; ++i) {
+                for (var j = 0; j < map.GetLength(1) - 1; ++j) {
+                    st.AddVertex(new Vector3(
+                                     (float)i / Config.Tesselation,
+                                     map[i, j],
+                                     (float)j / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)(i + 1) / Config.Tesselation,
+                                     map[i + 1, j],
+                                     (float)j / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)(i + 1) / Config.Tesselation,
+                                     map[i + 1, j + 1],
+                                     (float)(j + 1) / Config.Tesselation
+                                 ));
 
-                st.AddVertex(new Vector3(
-                                 (float)(i + 1) / Config.Tesselation,
-                                 map[i + 1, j + 1],
-                                 (float)(j + 1) / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)i / Config.Tesselation,
-                                 map[i, j + 1],
-                                 (float)(j + 1) / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)i / Config.Tesselation,
-                                 map[i, j],
-                                 (float)j / Config.Tesselation
-                             ));
+                    st.AddVertex(new Vector3(
+                                     (float)(i + 1) / Config.Tesselation,
+                                     map[i + 1, j + 1],
+                                     (float)(j + 1) / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)i / Config.Tesselation,
+                                     map[i, j + 1],
+                                     (float)(j + 1) / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)i / Config.Tesselation,
+                                     map[i, j],
+                                     (float)j / Config.Tesselation
+                                 ));
+                }
             }
 
             st.GenerateNormals();
             st.Index();
             var mesh = st.Commit();
-            var mat  = GD.Load<ShaderMaterial>("Resources/land.tres");
-            mesh.SurfaceSetMaterial(0, mat);
+            mesh.SurfaceSetMaterial(0, _landShader);
             _meshInstance.Mesh = mesh;
         }
 
@@ -240,28 +260,33 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             if (!_seedLineEdit.Text.Empty()) {
                 Config.Seed = int.TryParse(_seedLineEdit.Text, out var seed) ? seed : _seedLineEdit.Text.GetHashCode();
                 _shouldEmptySeed = false;
-            }
-            else {
+            } else {
                 Config.Seed        = new Random((int)DateTime.UtcNow.Ticks).Next();
                 _seedLineEdit.Text = Config.Seed.ToString();
                 _shouldEmptySeed   = true;
             }
 
-            Config.Width                    = (int)_widthSpinBox.Value;
-            Config.Height                   = (int)_heightSpinBox.Value;
-            Config.Tesselation              = (int)_tesselationSpinBox.Value;
-            Config.MinAmplitude             = (float)_minSpinBox.Value;
-            Config.MaxAmplitude             = (float)_maxSpinBox.Value;
-            Config.Scale                    = (float)_scaleSpinBox.Value;
-            Config.Persistence              = (float)_persistenceSlider.Value;
-            Config.Octaves                  = (int)_octavesSlider.Value;
-            Config.Lacunarity               = (float)_lacunaritySpinBox.Value;
-            Config.Correction.Type          = (CorrectionType)_correctionTypeOptionButton.Selected;
+            Config.Width           = (int)_widthSpinBox.Value;
+            Config.Height          = (int)_heightSpinBox.Value;
+            Config.Tesselation     = (int)_tesselationSpinBox.Value;
+            Config.MinAmplitude    = (float)_minSpinBox.Value;
+            Config.MaxAmplitude    = (float)_maxSpinBox.Value;
+            Config.Scale           = (float)_scaleSpinBox.Value;
+            Config.Persistence     = (float)_persistenceSlider.Value;
+            Config.Octaves         = (int)_octavesSlider.Value;
+            Config.Lacunarity      = (float)_lacunaritySpinBox.Value;
+            Config.Period          = (float)_periodSpinBox.Value;
+            Config.Correction.Type = (CorrectionType)_correctionTypeOptionButton.Selected;
+            // ReSharper disable PossibleLossOfFraction
+            Config.Correction.MapWidth  = Config.Width * Config.Tesselation / 2;
+            Config.Correction.MapHeight = Config.Height * Config.Tesselation / 2;
+            // ReSharper restore PossibleLossOfFraction
 
             _noise.Seed        = Config.Seed;
             _noise.Octaves     = Config.Octaves;
             _noise.Lacunarity  = Config.Lacunarity;
             _noise.Persistence = Config.Persistence;
+            _noise.Period      = Config.Period;
         }
 
         internal void _on_SeedInput_text_changed(string newSeed) {
@@ -270,8 +295,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 Config.Seed      = int.TryParse(newSeed, out var seed) ? seed : newSeed.GetHashCode();
                 _noise.Seed      = Config.Seed;
                 _shouldEmptySeed = false;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Config.Seed      = oldSeed;
                 _noise.Seed      = oldSeed;
                 _shouldEmptySeed = true;
@@ -306,56 +330,47 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         public Image GetNoiseImage() {
-            return _noise.GetImage(Config.Width, Config.Height);
+            var img = _noise.GetImage(
+                (int)(Config.Width / Config.Scale),
+                (int)(Config.Height / Config.Scale)
+            );
+            img.FlipX();
+            return img;
         }
 
         #region Mesh Colors
 
         internal void SetMeshColor(MeshSections section, Color color) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
             try {
-                mat?.SetShaderParam($"{section.ToString().ToLower()}_color", color);
-            }
-            catch (Exception ex) {
+                _landShader.SetShaderParam(ShaderSettings.ColorValue(section), color);
+                _config.ShaderSettings.Colors[section] = color;
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to set land shader parameter");
             }
         }
 
         internal Color? GetMeshColor(MeshSections section) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
-            try {
-                var obj = mat?.GetShaderParam($"{section.ToString().ToLower()}_color");
-                if (obj is Color color) {
-                    return color;
-                }
+            if (_config.ShaderSettings.Colors.TryGetValue(section, out var color)) {
+                return color;
             }
-            catch (Exception ex) {
-                Log.Logger.Error(ex, "Failed to get land shader parameter");
-            }
+
             return null;
         }
 
         internal void SetBorderValue(MeshSections section, double value) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
             try {
-                mat?.SetShaderParam($"{section.ToString().ToLower()}_value", value);
-            }
-            catch (Exception ex) {
+                _landShader.SetShaderParam(ShaderSettings.BorderValue(section), value);
+                _config.ShaderSettings.Borders[section] = value;
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to set land shader parameter");
             }
         }
 
         internal double? GetBorderValue(MeshSections section) {
-            var mat = _meshInstance.Mesh?.SurfaceGetMaterial(0) as ShaderMaterial;
-            try {
-                var obj = mat?.GetShaderParam($"{section.ToString().ToLower()}_value");
-                if (obj is double value) {
-                    return value;
-                }
+            if (_config.ShaderSettings.Borders.TryGetValue(section, out var value)) {
+                return value;
             }
-            catch (Exception ex) {
-                Log.Logger.Error(ex, "Failed to get land shader parameter");
-            }
+
             return null;
         }
 
@@ -396,6 +411,9 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
         [Export] private NodePath _lacunarityNodePath = new NodePath();
         private SpinBox _lacunaritySpinBox;
+
+        [Export] private NodePath _periodNodePath = new NodePath();
+        private SpinBox _periodSpinBox;
 
         [Export] private NodePath _correctionTypeNodePath = new NodePath();
         private OptionButton _correctionTypeOptionButton;

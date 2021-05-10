@@ -13,7 +13,7 @@ namespace ProceduralGeneration.Scripts {
         private const float ZOOM_MIN = 1f;
         private const float ZOOM_MAX = 10f;
         private const float ZOOM_STEP = .5f;
-        private static readonly Vector3 CameraPos = new Vector3(0, 2.2f, 2.2f);
+        private static readonly Vector3 CameraPos = new Vector3(2.2f, 2.2f, 0f);
 
         private static readonly ImmutableDictionary<KeyList, Vector3> Actions =
             new Dictionary<KeyList, Vector3> {
@@ -66,8 +66,7 @@ namespace ProceduralGeneration.Scripts {
             try {
                 _camera             = GetChild<Camera>(0);
                 _camera.Translation = CameraPos;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to initialize Pointer");
             }
         }
@@ -109,7 +108,6 @@ namespace ProceduralGeneration.Scripts {
             if (@event is InputEventMouseButton e2
                 && e2.IsPressed()
                 && Scrolling.ContainsKey((ButtonList)e2.ButtonIndex)) {
-
                 switch (Scrolling[(ButtonList)e2.ButtonIndex]) {
                     case Scroll.Closer:
                         if (_zoom < ZOOM_MAX) {
