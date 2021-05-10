@@ -363,13 +363,12 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/Advanced"]
-margin_left = 10.0
-margin_right = 270.0
-margin_bottom = 504.0
+margin_right = 394.0
+margin_bottom = 960.0
 custom_constants/separation = 10
 
 [node name="Header1" type="Label" parent="TabContainer/Advanced/VBoxContainer"]
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 34.0
 custom_fonts/font = ExtResource( 4 )
 text = "Water"
@@ -377,7 +376,7 @@ align = 1
 
 [node name="ShowWaterCheckBox" type="CheckBox" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 44.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 74.0
 size_flags_horizontal = 3
 custom_fonts/font = ExtResource( 1 )
@@ -387,7 +386,7 @@ align = 1
 
 [node name="WaterLabel" type="Label" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 84.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 106.0
 text = "Water Transparency:  80%"
 align = 1
@@ -395,7 +394,7 @@ valign = 1
 
 [node name="WaterSlider" type="HSlider" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 116.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 132.0
 max_value = 1.0
 step = 0.01
@@ -406,12 +405,12 @@ __meta__ = {
 
 [node name="HSep1" type="HSeparator" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 142.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 146.0
 
 [node name="Header2" type="Label" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 156.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 190.0
 custom_fonts/font = ExtResource( 4 )
 text = "Colors"
@@ -419,7 +418,7 @@ align = 1
 
 [node name="GridContainer" type="GridContainer" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 200.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 330.0
 size_flags_horizontal = 3
 custom_constants/vseparation = 2
@@ -512,18 +511,18 @@ margin_bottom = 130.0
 
 [node name="ResetButton" type="Button" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 340.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 368.0
 text = "Reset To Defaults"
 
 [node name="HSep2" type="HSeparator" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 378.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 382.0
 
 [node name="Header3" type="Label" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 392.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 426.0
 custom_fonts/font = ExtResource( 4 )
 text = "Misc"
@@ -531,7 +530,7 @@ align = 1
 
 [node name="ShowNoisePreviewCheckBox" type="CheckBox" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 436.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 466.0
 size_flags_horizontal = 3
 custom_fonts/font = ExtResource( 1 )
@@ -540,24 +539,27 @@ align = 1
 
 [node name="FunctionalCorrectionOptionButton" type="OptionButton" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 476.0
-margin_right = 260.0
+margin_right = 394.0
 margin_bottom = 504.0
 align = 1
 
 [node name="ColorPickWindow" type="WindowDialog" parent="TabContainer/Advanced/VBoxContainer"]
-margin_left = 36.0
-margin_top = 83.0
-margin_right = 204.0
-margin_bottom = 84.0
+visible = true
+margin_top = 514.0
+margin_right = 398.0
+margin_bottom = 964.0
+grow_horizontal = 2
+grow_vertical = 2
+rect_min_size = Vector2( 394, 446 )
 window_title = "Pick A Color"
 
 [node name="ColorPicker" type="ColorPicker" parent="TabContainer/Advanced/VBoxContainer/ColorPickWindow"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 24.0
-margin_top = 24.0
-margin_right = 16.0
-margin_bottom = 16.0
+margin_right = -2.0
+margin_bottom = -2.0
+size_flags_horizontal = 5
+size_flags_vertical = 5
 alignment = 1
 edit_alpha = false
 presets_enabled = false

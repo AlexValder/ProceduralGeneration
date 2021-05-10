@@ -106,8 +106,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _meshInstance      = GetNode<MeshInstance>(_meshPath);
                 _waterMeshInstance = _meshInstance.GetChild<MeshInstance>(0);
                 _landShader        = GD.Load<ShaderMaterial>("Resources/land.tres");
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to initialize MapGenerator");
             }
         }
@@ -156,37 +155,38 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         private void FillMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map) {
-            for (var i = iBegin; i < iEnd; ++i)
-            for (var j = jBegin; j < jEnd; ++j) {
-                map[i, j] = _noise.GetNoise2d(
-                    i / (Config.Scale * Config.Tesselation),
-                    j / (Config.Scale * Config.Tesselation)
-                );
+            for (var i = iBegin; i < iEnd; ++i) {
+                for (var j = jBegin; j < jEnd; ++j) {
+                    map[i, j] = _noise.GetNoise2d(
+                        i / (Config.Scale * Config.Tesselation),
+                        j / (Config.Scale * Config.Tesselation)
+                    );
+                }
             }
         }
 
         private void CreateMapParallel(int iBegin, int iEnd, int jBegin, int jEnd, float[,] map, float min, float max) {
             var move   = (max + min) / 2;
-            var rel    = 2 / (max - min);
+            var rel    = 2 / Mathf.Abs(max - min);
             var radius = Mathf.Abs(Config.MaxAmplitude - Config.MinAmplitude) / 2;
             var diff   = Config.MaxAmplitude - radius;
 
             Log.Logger.Debug("Move: {Move}, Rel: {Rel}, Rad: {Radius}, Diff: {Diff}",
                              move, rel, radius, diff);
 
-            for (var i = iBegin; i < iEnd; ++i)
-            for (var j = jBegin; j < jEnd; ++j) {
-                map[i, j] = Config.Correction.GetCorrection(
-                    (map[i, j] - move) * rel
-                ) * radius + diff;
+            for (var i = iBegin; i < iEnd; ++i) {
+                for (var j = jBegin; j < jEnd; ++j) {
+                    map[i, j] = Config.Correction.GetCorrection(
+                        (map[i, j] - move) * rel
+                    ) * radius + diff;
+                }
             }
         }
 
         public void GenerateMap() {
             try {
                 PopulateConfig();
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to populate config");
             }
 
@@ -209,39 +209,40 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
             // Generate "Land"
 
-            for (var i = 0; i < map.GetLength(0) - 1; ++i)
-            for (var j = 0; j < map.GetLength(1) - 1; ++j) {
-                st.AddVertex(new Vector3(
-                                 (float)i / Config.Tesselation,
-                                 map[i, j],
-                                 (float)j / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)(i + 1) / Config.Tesselation,
-                                 map[i + 1, j],
-                                 (float)j / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)(i + 1) / Config.Tesselation,
-                                 map[i + 1, j + 1],
-                                 (float)(j + 1) / Config.Tesselation
-                             ));
+            for (var i = 0; i < map.GetLength(0) - 1; ++i) {
+                for (var j = 0; j < map.GetLength(1) - 1; ++j) {
+                    st.AddVertex(new Vector3(
+                                     (float)i / Config.Tesselation,
+                                     map[i, j],
+                                     (float)j / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)(i + 1) / Config.Tesselation,
+                                     map[i + 1, j],
+                                     (float)j / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)(i + 1) / Config.Tesselation,
+                                     map[i + 1, j + 1],
+                                     (float)(j + 1) / Config.Tesselation
+                                 ));
 
-                st.AddVertex(new Vector3(
-                                 (float)(i + 1) / Config.Tesselation,
-                                 map[i + 1, j + 1],
-                                 (float)(j + 1) / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)i / Config.Tesselation,
-                                 map[i, j + 1],
-                                 (float)(j + 1) / Config.Tesselation
-                             ));
-                st.AddVertex(new Vector3(
-                                 (float)i / Config.Tesselation,
-                                 map[i, j],
-                                 (float)j / Config.Tesselation
-                             ));
+                    st.AddVertex(new Vector3(
+                                     (float)(i + 1) / Config.Tesselation,
+                                     map[i + 1, j + 1],
+                                     (float)(j + 1) / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)i / Config.Tesselation,
+                                     map[i, j + 1],
+                                     (float)(j + 1) / Config.Tesselation
+                                 ));
+                    st.AddVertex(new Vector3(
+                                     (float)i / Config.Tesselation,
+                                     map[i, j],
+                                     (float)j / Config.Tesselation
+                                 ));
+                }
             }
 
             st.GenerateNormals();
@@ -259,8 +260,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             if (!_seedLineEdit.Text.Empty()) {
                 Config.Seed = int.TryParse(_seedLineEdit.Text, out var seed) ? seed : _seedLineEdit.Text.GetHashCode();
                 _shouldEmptySeed = false;
-            }
-            else {
+            } else {
                 Config.Seed        = new Random((int)DateTime.UtcNow.Ticks).Next();
                 _seedLineEdit.Text = Config.Seed.ToString();
                 _shouldEmptySeed   = true;
@@ -295,8 +295,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 Config.Seed      = int.TryParse(newSeed, out var seed) ? seed : newSeed.GetHashCode();
                 _noise.Seed      = Config.Seed;
                 _shouldEmptySeed = false;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Config.Seed      = oldSeed;
                 _noise.Seed      = oldSeed;
                 _shouldEmptySeed = true;
@@ -345,8 +344,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             try {
                 _landShader.SetShaderParam(ShaderSettings.ColorValue(section), color);
                 _config.ShaderSettings.Colors[section] = color;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to set land shader parameter");
             }
         }
@@ -355,6 +353,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             if (_config.ShaderSettings.Colors.TryGetValue(section, out var color)) {
                 return color;
             }
+
             return null;
         }
 
@@ -362,8 +361,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             try {
                 _landShader.SetShaderParam(ShaderSettings.BorderValue(section), value);
                 _config.ShaderSettings.Borders[section] = value;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to set land shader parameter");
             }
         }
@@ -372,6 +370,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             if (_config.ShaderSettings.Borders.TryGetValue(section, out var value)) {
                 return value;
             }
+
             return null;
         }
 

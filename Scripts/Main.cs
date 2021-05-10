@@ -4,6 +4,9 @@ using Godot;
 using Newtonsoft.Json;
 using ProceduralGeneration.Scripts.MapGeneration;
 using Serilog;
+#if !DEBUG
+using Serilog.Events;
+#endif
 using SDirectory = System.IO.Directory;
 using SFile = System.IO.File;
 using SPath = System.IO.Path;
@@ -12,6 +15,7 @@ using MeshSections = ProceduralGeneration.Scripts.MapGeneration.ShaderSettings.M
 namespace ProceduralGeneration.Scripts {
     public class Main : Spatial {
         #region Fields
+
 #if DEBUG
         private readonly string _savesDirectory = SPath.GetFullPath("../Saves/");
         private readonly string _logsDirectory = SPath.GetFullPath("../");
@@ -20,7 +24,9 @@ namespace ProceduralGeneration.Scripts {
         private readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
 #endif
         private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer";
+
         private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer";
+
         // private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/GridContainer/";
         private static readonly NodePath GeneralControls = "GUI/ControlPanel/VBoxContainer/";
 
@@ -61,7 +67,9 @@ namespace ProceduralGeneration.Scripts {
 
         private MapGenerator _mapGen;
         private Pointer _pointer;
+
         private TextureRect _minimap;
+
         // private OptionButton _memoryUnit;
         private FileDialog _loadSaveDialog;
 
@@ -85,8 +93,7 @@ namespace ProceduralGeneration.Scripts {
                     _minimap.Visible     = true;
                     _minimap.Texture     = texture;
                     _minimap.RectMinSize = _minimapScale;
-                }
-                else {
+                } else {
                     _minimap.Texture?.Dispose();
                     _minimap.Visible = false;
                 }
@@ -147,8 +154,7 @@ namespace ProceduralGeneration.Scripts {
                 Debug.Assert(_snowBorder != null, "Snow Border Not Found");
                 Debug.Assert(_stoneBorder != null, "Stone Border Not Found");
                 Debug.Assert(_grassBorder != null, "Grass Border Not Found");
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");
                 throw;
             }
@@ -347,8 +353,7 @@ namespace ProceduralGeneration.Scripts {
                     this,
                     nameof(_on_ResetToDefaults_pressed)
                 );
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to connect signals");
             }
 
@@ -358,8 +363,7 @@ namespace ProceduralGeneration.Scripts {
 
             try {
                 SDirectory.CreateDirectory(_savesDirectory);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to create Saves director");
             }
         }
@@ -375,14 +379,13 @@ namespace ProceduralGeneration.Scripts {
 
             if (Input.IsKeyPressed((int)KeyList.Escape)) {
                 GetTree().Quit();
-            }
-            else if (Input.IsKeyPressed((int)KeyList.Enter)) {
+            } else if (Input.IsKeyPressed((int)KeyList.Enter)) {
                 _on_GenerateMapButton_button_up();
                 GetTree().SetInputAsHandled();
             } else if (Input.IsKeyPressed((int)KeyList.R)) {
                 _pointer.Reset(
-                    _mapGen.Config.Width,
-                    _mapGen.Config.Height / 2
+                    _mapGen.Config.Width / 2,
+                    _mapGen.Config.Height
                 );
                 GetTree().SetInputAsHandled();
             }
@@ -391,23 +394,27 @@ namespace ProceduralGeneration.Scripts {
         #endregion
 
         private void SetupLogger() {
-            var builder = new LoggerConfiguration();
+            try {
+                var builder = new LoggerConfiguration();
 
-            SDirectory.CreateDirectory(_logsDirectory);
+                SDirectory.CreateDirectory(_logsDirectory);
 
-            builder
+                builder
 #if DEBUG
-                .WriteTo.Console()
-                .MinimumLevel.Debug()
+                    .WriteTo.Console()
+                    .MinimumLevel.Debug()
 #else
                 .WriteTo.File(
                     path: SPath.Combine(_logsDirectory, "error_log.log"),
                     restrictedToMinimumLevel: LogEventLevel.Warning
                     )
 #endif
-                ;
+                    ;
 
-            Log.Logger = builder.CreateLogger();
+                Log.Logger = builder.CreateLogger();
+            } catch (Exception ex) {
+                Log.Logger.Fatal(ex, "Failed to setup logger");
+            }
         }
 
         #region Signals
@@ -416,10 +423,11 @@ namespace ProceduralGeneration.Scripts {
             _mapGen.GenerateMap();
             if (VectorsAreClose(_pointer.Translation, Vector3.Zero)) {
                 _pointer.Reset(
-                    _mapGen.Config.Width,
-                    _mapGen.Config.Height / 2
+                    _mapGen.Config.Width / 2,
+                    _mapGen.Config.Height
                 );
             }
+
             _on_ShowNoisePreviewCheckBox_toggled(ShowNoiseMinimap);
         }
 
@@ -474,9 +482,13 @@ namespace ProceduralGeneration.Scripts {
             );
         }
 
-        private void StopInputProcessing() => InputProcessing = false;
+        private void StopInputProcessing() {
+            InputProcessing = false;
+        }
 
-        private void StartInputProcessing() => InputProcessing = true;
+        private void StartInputProcessing() {
+            InputProcessing = true;
+        }
 
         private void _on_ExitButton_pressed() {
             GetTree().Quit();
@@ -513,10 +525,21 @@ namespace ProceduralGeneration.Scripts {
             help.PopupCentered();
         }
 
-        private void _on_SnowButton_pressed() => ConfigureColor(MeshSections.Snow);
-        private void _on_StoneButton_pressed() => ConfigureColor(MeshSections.Stone);
-        private void _on_GrassButton_pressed() => ConfigureColor(MeshSections.Grass);
-        private void _on_SandButton_pressed() => ConfigureColor(MeshSections.Sand);
+        private void _on_SnowButton_pressed() {
+            ConfigureColor(MeshSections.Snow);
+        }
+
+        private void _on_StoneButton_pressed() {
+            ConfigureColor(MeshSections.Stone);
+        }
+
+        private void _on_GrassButton_pressed() {
+            ConfigureColor(MeshSections.Grass);
+        }
+
+        private void _on_SandButton_pressed() {
+            ConfigureColor(MeshSections.Sand);
+        }
 
         private void ConfigureColor(MeshSections section) {
             BreakExistingConnections();
@@ -548,12 +571,19 @@ namespace ProceduralGeneration.Scripts {
 
         private void _on_SnowColor_changed(Color color) {
             ButtonColorChanged(MeshSections.Snow, color);
-
         }
 
-        private void _on_StoneColor_changed(Color color) => ButtonColorChanged(MeshSections.Stone, color);
-        private void _on_GrassColor_changed(Color color) => ButtonColorChanged(MeshSections.Grass, color);
-        private void _on_SandColor_changed(Color color) => ButtonColorChanged(MeshSections.Sand, color);
+        private void _on_StoneColor_changed(Color color) {
+            ButtonColorChanged(MeshSections.Stone, color);
+        }
+
+        private void _on_GrassColor_changed(Color color) {
+            ButtonColorChanged(MeshSections.Grass, color);
+        }
+
+        private void _on_SandColor_changed(Color color) {
+            ButtonColorChanged(MeshSections.Sand, color);
+        }
 
         private void ButtonColorChanged(MeshSections section, Color color) {
             GetMaterial(section)?.SetShaderParam("selected_color", color);
@@ -587,6 +617,7 @@ namespace ProceduralGeneration.Scripts {
 
             _mapGen.SetBorderValue(MeshSections.Snow, value);
         }
+
         private void _on_StoneBorderValue_changed(double value) {
             if (value <= _grassBorder.Value) {
                 _grassBorder.Value = value - _grassBorder.Step;
@@ -596,6 +627,7 @@ namespace ProceduralGeneration.Scripts {
 
             _mapGen.SetBorderValue(MeshSections.Stone, value);
         }
+
         private void _on_GrassBorderValue_changed(double value) {
             if (value >= _stoneBorder.Value) {
                 _stoneBorder.Value = value + _stoneBorder.Step;

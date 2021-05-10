@@ -36,7 +36,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 case MeshSections.Stone: return "stone_value";
                 case MeshSections.Grass: return "grass_value";
                 case MeshSections.Sand:  return "sand_value";
-                default: throw new ArgumentOutOfRangeException(nameof(section), section, "Handle this");
+                default:                 throw new ArgumentOutOfRangeException(nameof(section), section, "Handle this");
             }
         }
 
@@ -51,17 +51,17 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         public Dictionary<MeshSections, Color> Colors { get; } = new Dictionary<MeshSections, Color> {
-            [MeshSections.Snow] = DefaultColors[MeshSections.Snow],
+            [MeshSections.Snow]  = DefaultColors[MeshSections.Snow],
             [MeshSections.Stone] = DefaultColors[MeshSections.Stone],
             [MeshSections.Grass] = DefaultColors[MeshSections.Grass],
-            [MeshSections.Sand] = DefaultColors[MeshSections.Sand],
+            [MeshSections.Sand]  = DefaultColors[MeshSections.Sand]
         };
 
         public Dictionary<MeshSections, double> Borders { get; } = new Dictionary<MeshSections, double> {
             [MeshSections.Snow]  = DefaultBorders[MeshSections.Snow],
             [MeshSections.Stone] = DefaultBorders[MeshSections.Stone],
             [MeshSections.Grass] = DefaultBorders[MeshSections.Grass],
-            [MeshSections.Sand]  = DefaultBorders[MeshSections.Sand],
+            [MeshSections.Sand]  = DefaultBorders[MeshSections.Sand]
         };
     }
 }

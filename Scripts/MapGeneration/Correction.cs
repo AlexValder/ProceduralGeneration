@@ -7,11 +7,10 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
     public enum CorrectionType {
         Linear,
         Square,
-        Cubic,
+        Cubic
     }
 
     public class Correction {
-
         [JsonIgnore] private static readonly double Sqrt2 = Math.Sqrt(2);
         [JsonIgnore] private static readonly double Sqrt2By2 = Math.Sqrt(2) / 2;
         private const float WATER_LEVEL = -.01f;
@@ -46,7 +45,10 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 return z * grad;
             }
 
-            if (z < 0) return -z * grad + WATER_LEVEL;
+            if (z < 0) {
+                return -z * grad + WATER_LEVEL;
+            }
+
             return z * grad;
         }
     }
