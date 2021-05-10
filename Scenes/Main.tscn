@@ -34,9 +34,12 @@ _scaleNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGr
 _persistenceNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PersistenceHBox/PersistenceSlider")
 _octavesNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/OctavesHBox/OctavesSlider")
 _lacunarityNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/LacunaritySpinBox")
+_periodNodePath = NodePath("../GUI/TabContainer/Map/VBoxContainer/MapParametersGrid/PeriodSpinBox")
 _correctionTypeNodePath = NodePath("../GUI/TabContainer/Advanced/VBoxContainer/FunctionalCorrectionOptionButton")
 
 [node name="NoiseMapMiniMap" type="TextureRect" parent="."]
+margin_right = 64.0
+margin_bottom = 64.0
 size_flags_horizontal = 12
 size_flags_vertical = 12
 __meta__ = {
@@ -58,7 +61,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 9.53674e-07 )
 script = ExtResource( 4 )
 
 [node name="Camera" type="Camera" parent="Pointer"]
-transform = Transform( 1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 2.2, 2.2 )
+transform = Transform( -4.37114e-08, -0.5, 0.866025, 0, 0.866025, 0.5, -1, 2.18557e-08, -3.78552e-08, 2.2, 2.2, 3.41061e-13 )
 current = true
 far = 500.0
 

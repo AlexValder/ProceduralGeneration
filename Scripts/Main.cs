@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
 using Newtonsoft.Json;
@@ -382,8 +381,8 @@ namespace ProceduralGeneration.Scripts {
                 GetTree().SetInputAsHandled();
             } else if (Input.IsKeyPressed((int)KeyList.R)) {
                 _pointer.Reset(
-                    _mapGen.Config.Width / 2,
-                    _mapGen.Config.Height
+                    _mapGen.Config.Width,
+                    _mapGen.Config.Height / 2
                 );
                 GetTree().SetInputAsHandled();
             }
@@ -417,8 +416,8 @@ namespace ProceduralGeneration.Scripts {
             _mapGen.GenerateMap();
             if (VectorsAreClose(_pointer.Translation, Vector3.Zero)) {
                 _pointer.Reset(
-                    _mapGen.Config.Width / 2,
-                    _mapGen.Config.Height
+                    _mapGen.Config.Width,
+                    _mapGen.Config.Height / 2
                 );
             }
             _on_ShowNoisePreviewCheckBox_toggled(ShowNoiseMinimap);

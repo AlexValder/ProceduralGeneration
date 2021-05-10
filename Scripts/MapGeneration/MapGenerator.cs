@@ -24,6 +24,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         public float Persistence { get; set; }
         public int Octaves { get; set; }
         public float Lacunarity { get; set; }
+        public float Period { get; set; }
         public Correction Correction { get; set; } = new Correction();
 
         public ShaderSettings ShaderSettings { get; set; } = new ShaderSettings();
@@ -55,6 +56,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _persistenceSlider.Value  = _config.Persistence  = value.Persistence;
                 _octavesSlider.Value      = _config.Octaves      = value.Octaves;
                 _lacunaritySpinBox.Value  = _config.Lacunarity   = value.Lacunarity;
+                _periodSpinBox.Value      = _config.Period       = value.Period;
                 _config.Correction        = value.Correction;
                 _config.ShaderSettings    = value.ShaderSettings;
 
@@ -74,6 +76,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _noise.Lacunarity  = value.Lacunarity;
                 _noise.Persistence = value.Persistence;
                 _noise.Octaves     = value.Octaves;
+                _noise.Period      = value.Period;
 
                 CreateMap();
             }
@@ -93,6 +96,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _persistenceSlider          = GetNode<Slider>(_persistenceNodePath);
                 _octavesSlider              = GetNode<Slider>(_octavesNodePath);
                 _lacunaritySpinBox          = GetNode<SpinBox>(_lacunarityNodePath);
+                _periodSpinBox              = GetNode<SpinBox>(_periodNodePath);
                 _correctionTypeOptionButton = GetNode<OptionButton>(_correctionTypeNodePath);
 
                 _correctionTypeOptionButton.AddItem("Linear", 0);
@@ -262,16 +266,17 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
                 _shouldEmptySeed   = true;
             }
 
-            Config.Width                = (int)_widthSpinBox.Value;
-            Config.Height               = (int)_heightSpinBox.Value;
-            Config.Tesselation          = (int)_tesselationSpinBox.Value;
-            Config.MinAmplitude         = (float)_minSpinBox.Value;
-            Config.MaxAmplitude         = (float)_maxSpinBox.Value;
-            Config.Scale                = (float)_scaleSpinBox.Value;
-            Config.Persistence          = (float)_persistenceSlider.Value;
-            Config.Octaves              = (int)_octavesSlider.Value;
-            Config.Lacunarity           = (float)_lacunaritySpinBox.Value;
-            Config.Correction.Type      = (CorrectionType)_correctionTypeOptionButton.Selected;
+            Config.Width           = (int)_widthSpinBox.Value;
+            Config.Height          = (int)_heightSpinBox.Value;
+            Config.Tesselation     = (int)_tesselationSpinBox.Value;
+            Config.MinAmplitude    = (float)_minSpinBox.Value;
+            Config.MaxAmplitude    = (float)_maxSpinBox.Value;
+            Config.Scale           = (float)_scaleSpinBox.Value;
+            Config.Persistence     = (float)_persistenceSlider.Value;
+            Config.Octaves         = (int)_octavesSlider.Value;
+            Config.Lacunarity      = (float)_lacunaritySpinBox.Value;
+            Config.Period          = (float)_periodSpinBox.Value;
+            Config.Correction.Type = (CorrectionType)_correctionTypeOptionButton.Selected;
             // ReSharper disable PossibleLossOfFraction
             Config.Correction.MapWidth  = Config.Width * Config.Tesselation / 2;
             Config.Correction.MapHeight = Config.Height * Config.Tesselation / 2;
@@ -281,6 +286,7 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
             _noise.Octaves     = Config.Octaves;
             _noise.Lacunarity  = Config.Lacunarity;
             _noise.Persistence = Config.Persistence;
+            _noise.Period      = Config.Period;
         }
 
         internal void _on_SeedInput_text_changed(string newSeed) {
@@ -325,7 +331,12 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
         }
 
         public Image GetNoiseImage() {
-            return _noise.GetImage(Config.Width, Config.Height);
+            var img = _noise.GetImage(
+                (int)(Config.Width / Config.Scale),
+                (int)(Config.Height / Config.Scale)
+            );
+            img.FlipX();
+            return img;
         }
 
         #region Mesh Colors
@@ -401,6 +412,9 @@ namespace ProceduralGeneration.Scripts.MapGeneration {
 
         [Export] private NodePath _lacunarityNodePath = new NodePath();
         private SpinBox _lacunaritySpinBox;
+
+        [Export] private NodePath _periodNodePath = new NodePath();
+        private SpinBox _periodSpinBox;
 
         [Export] private NodePath _correctionTypeNodePath = new NodePath();
         private OptionButton _correctionTypeOptionButton;
