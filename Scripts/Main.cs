@@ -16,18 +16,9 @@ namespace ProceduralGeneration.Scripts {
     public class Main : Spatial {
         #region Fields
 
-#if DEBUG
-        private readonly string _savesDirectory = SPath.GetFullPath("../Saves/");
-        private readonly string _logsDirectory = SPath.GetFullPath("../");
-#else
-        private readonly string _savesDirectory = SPath.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Saves/");
-        private readonly string _logsDirectory = AppDomain.CurrentDomain.BaseDirectory;
-#endif
-        private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer";
-
-        private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer";
-
-        // private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/GridContainer/";
+        private static readonly NodePath MapMenuConfig = "GUI/TabContainer/Map/VBoxContainer/";
+        private static readonly NodePath AdvancedMenuConfig = "GUI/TabContainer/Advanced/VBoxContainer/";
+        private static readonly NodePath SystemMenuConfig = "GUI/TabContainer/System/VBoxContainer/";
         private static readonly NodePath GeneralControls = "GUI/ControlPanel/VBoxContainer/";
 
         private readonly NodePath _persistenceContainer = $"{MapMenuConfig}/MapParametersGrid/PersistenceHBox";
@@ -42,6 +33,8 @@ namespace ProceduralGeneration.Scripts {
         private readonly NodePath _waterVisibility = $"{AdvancedMenuConfig}/ShowWaterCheckBox";
         private readonly NodePath _noiseMinimap = $"{AdvancedMenuConfig}/ShowNoisePreviewCheckBox";
 
+        private readonly NodePath _fullscreenPath = $"{SystemMenuConfig}/FullscreenCheckButton";
+        private readonly NodePath _selectPathContainer = $"{SystemMenuConfig}/SelectGrid/";
         // private readonly NodePath _taskNum = $"{SystemMenuConfig}/ParallelNumSpinBox";
 
         private readonly NodePath _snowBorderPath = $"{AdvancedMenuConfig}/GridContainer/SnowSpinBox";
@@ -60,6 +53,8 @@ namespace ProceduralGeneration.Scripts {
         private Label _persistenceValueLabel;
         private Label _octavesValueLabel;
         private Label _waterValueLabel;
+
+        private CheckButton _fullscreenCheckButton;
 
         private SpinBox _snowBorder;
         private SpinBox _stoneBorder;
@@ -104,6 +99,9 @@ namespace ProceduralGeneration.Scripts {
 
         private bool _showNoiseMinimap;
         private readonly Vector2 _minimapScale = new Vector2(256, 256);
+        private string _logsDirectory;
+        private string _savesDirectory;
+        private readonly AppSettings _appSettings = new AppSettings();
 
         #region Godot Overrides
 
@@ -114,10 +112,13 @@ namespace ProceduralGeneration.Scripts {
                 GetTree().Quit();
             };
 
-            OS.WindowMaximized  = true;
-            OS.WindowFullscreen = true;
-            OS.WindowResizable  = false;
-            OS.WindowSize       = OS.GetScreenSize();
+            _appSettings.GetValue(SettingsEntries.Fullscreen, out bool fs);
+            _appSettings.GetValue(SettingsEntries.LogFolder, out _logsDirectory);
+            _appSettings.GetValue(SettingsEntries.SavesFolder, out _savesDirectory);
+
+            OS.WindowMaximized = true;
+            OS.WindowPosition  = Vector2.Zero;
+            OS.WindowFullscreen = fs;
 
             try {
                 _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
@@ -131,6 +132,9 @@ namespace ProceduralGeneration.Scripts {
                 _minimap               = GetChild<TextureRect>(1);
                 _pointer               = GetChild<Pointer>(4);
                 _loadSaveDialog        = GetNode<FileDialog>($"{_loadButton}/FileDialog");
+                _fullscreenCheckButton = GetNode<CheckButton>(_fullscreenPath);
+
+                _fullscreenCheckButton.Pressed = fs;
 
                 _colorPickerDialog = GetNode<Popup>(_colorButtonWindow);
                 _colorPicker       = GetNode<ColorPicker>($"{_colorButtonWindow}/ColorPicker");
@@ -154,13 +158,11 @@ namespace ProceduralGeneration.Scripts {
                 Debug.Assert(_snowBorder != null, "Snow Border Not Found");
                 Debug.Assert(_stoneBorder != null, "Stone Border Not Found");
                 Debug.Assert(_grassBorder != null, "Grass Border Not Found");
+                Debug.Assert(_fullscreenCheckButton != null, "Fullscreen Check Box Not Found");
             } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to get node");
                 throw;
             }
-
-            var tabs = GetNode<TabContainer>("GUI/TabContainer/");
-            tabs.SetTabDisabled(2, true);
 
             // Dropdown populating
 
@@ -353,8 +355,63 @@ namespace ProceduralGeneration.Scripts {
                     this,
                     nameof(_on_ResetToDefaults_pressed)
                 );
+
+                GetNode(_fullscreenPath).Connect(
+                    "toggled",
+                    this,
+                    nameof(_on_FullscreenCheckBox_toggled)
+                );
+
+                GetNode($"{_selectPathContainer}/LogButton").Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_LogButton_pressed)
+                );
+
+                GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
+                    "about_to_show",
+                    this,
+                    nameof(StopInputProcessing)
+                );
+
+                GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
+                    "popup_hide",
+                    this,
+                    nameof(StartInputProcessing)
+                );
+
+                GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
+                    "dir_selected",
+                    this,
+                    nameof(_on_LogPathFileDialog_dir_selected)
+                );
+
+                GetNode($"{_selectPathContainer}/SaveButton").Connect(
+                    "pressed",
+                    this,
+                    nameof(_on_SelectSaveButton_pressed)
+                );
+
+                GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
+                    "about_to_show",
+                    this,
+                    nameof(StopInputProcessing)
+                );
+
+                GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
+                    "popup_hide",
+                    this,
+                    nameof(StartInputProcessing)
+                );
+
+                GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
+                    "dir_selected",
+                    this,
+                    nameof(_on_SavesFileDialog_dir_selected)
+                );
             } catch (Exception ex) {
                 Log.Logger.Error(ex, "Failed to connect signals");
+                throw;
             }
 
             #endregion
@@ -405,7 +462,7 @@ namespace ProceduralGeneration.Scripts {
                     .MinimumLevel.Debug()
 #else
                 .WriteTo.File(
-                    path: SPath.Combine(_logsDirectory, "error_log.log"),
+                    path: SPath.Combine(_logsDirectory, $"{DateTime.Now}.log"),
                     restrictedToMinimumLevel: LogEventLevel.Warning
                     )
 #endif
@@ -645,6 +702,35 @@ namespace ProceduralGeneration.Scripts {
                 GetMaterial(pair.Key).SetShaderParam("selected_color", pair.Value);
                 _mapGen.SetMeshColor(pair.Key, pair.Value);
             }
+        }
+
+        private void _on_FullscreenCheckBox_toggled(bool buttonPressed) {
+            _appSettings.SetValue(SettingsEntries.Fullscreen, buttonPressed);
+            OS.WindowFullscreen = buttonPressed;
+            OS.WindowMaximized  = true;
+            OS.WindowPosition   = Vector2.Zero;
+        }
+
+        private void _on_LogButton_pressed() {
+            var fd = GetNode<FileDialog>($"{SystemMenuConfig}/LogFileDialog");
+            fd.CurrentDir = SPath.GetFullPath(_logsDirectory);
+            fd.PopupCentered();
+        }
+
+        private void _on_SelectSaveButton_pressed() {
+            var fd = GetNode<FileDialog>($"{SystemMenuConfig}/SavesFileDialog");
+            fd.CurrentDir = SPath.GetFullPath(_savesDirectory);
+            fd.PopupCentered();
+        }
+
+        private void _on_LogPathFileDialog_dir_selected(string dir) {
+            _logsDirectory = dir;
+            _appSettings.SetValue(SettingsEntries.LogFolder, dir);
+        }
+
+        private void _on_SavesFileDialog_dir_selected(string dir) {
+            _savesDirectory = dir;
+            _appSettings.SetValue(SettingsEntries.SavesFolder, dir);
         }
 
         #endregion
