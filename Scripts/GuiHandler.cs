@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using Godot;
 using Newtonsoft.Json;
 using ProceduralGeneration.Scripts.MapGeneration;
@@ -85,22 +86,22 @@ namespace ProceduralGeneration.Scripts {
 
         private void GetNodes() {
             try {
-                _persistenceValueLabel = GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
-                _octavesValueLabel     = GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
-                _waterValueLabel       = GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
-                _snowButton            = GetNode<Button>(_snowButtonPath);
-                _stoneButton           = GetNode<Button>(_stoneButtonPath);
-                _grassButton           = GetNode<Button>(_grassButtonPath);
-                _sandButton            = GetNode<Button>(_sandButtonPath);
-                _loadSaveDialog        = GetNode<FileDialog>($"{_loadButton}/FileDialog");
-                _fullscreenCheckButton = GetNode<CheckButton>(_fullscreenPath);
+                _persistenceValueLabel = _main.GetNode<Label>($"{_persistenceContainer}/PersistenceValueLabel");
+                _octavesValueLabel     = _main.GetNode<Label>($"{_octavesContainer}/OctavesValueLabel");
+                _waterValueLabel       = _main.GetNode<Label>($"{AdvancedMenuConfig}/WaterLabel");
+                _snowButton            = _main.GetNode<Button>(_snowButtonPath);
+                _stoneButton           = _main.GetNode<Button>(_stoneButtonPath);
+                _grassButton           = _main.GetNode<Button>(_grassButtonPath);
+                _sandButton            = _main.GetNode<Button>(_sandButtonPath);
+                _loadSaveDialog        = _main.GetNode<FileDialog>($"{_loadButton}/FileDialog");
+                _fullscreenCheckButton = _main.GetNode<CheckButton>(_fullscreenPath);
 
-                _colorPickerDialog = GetNode<Popup>(_colorButtonWindow);
-                _colorPicker       = GetNode<ColorPicker>($"{_colorButtonWindow}/ColorPicker");
+                _colorPickerDialog = _main.GetNode<Popup>(_colorButtonWindow);
+                _colorPicker       = _main.GetNode<ColorPicker>($"{_colorButtonWindow}/ColorPicker");
 
-                _snowBorder  = GetNode<SpinBox>(_snowBorderPath);
-                _stoneBorder = GetNode<SpinBox>(_stoneBorderPath);
-                _grassBorder = GetNode<SpinBox>(_grassBorderPath);
+                _snowBorder  = _main.GetNode<SpinBox>(_snowBorderPath);
+                _stoneBorder = _main.GetNode<SpinBox>(_stoneBorderPath);
+                _grassBorder = _main.GetNode<SpinBox>(_grassBorderPath);
 
                 Debug.Assert(_persistenceValueLabel != null, "Persistence Not Found");
                 Debug.Assert(_octavesValueLabel != null, "Octaves Not Found");
@@ -121,21 +122,19 @@ namespace ProceduralGeneration.Scripts {
 
         private void ConnectSignals() {
             try {
-                GetNode(_saveButton).Connect(
+                _main.GetNode(_saveButton).Connect(
                     "pressed",
                     this,
                     nameof(_on_SaveButton_pressed)
                 );
 
-                GetNode($"{_saveButton}/FileDialog").Connect(
+                _main.GetNode($"{_saveButton}/FileDialog").Connect(
                     "file_selected",
                     this,
                     nameof(_on_SaveFileDialog_file_selected)
                 );
 
-                // Config loading
-
-                GetNode(_loadButton).Connect(
+                _main.GetNode(_loadButton).Connect(
                     "pressed",
                     this,
                     nameof(_on_LoadButton_pressed)
@@ -147,7 +146,7 @@ namespace ProceduralGeneration.Scripts {
                     nameof(_on_LoadFileDialog_file_selected)
                 );
 
-                GetNode($"{_saveButton}/FileDialog").Connect(
+                _main.GetNode($"{_saveButton}/FileDialog").Connect(
                     "about_to_show",
                     this,
                     nameof(StopInputProcessing)
@@ -159,7 +158,7 @@ namespace ProceduralGeneration.Scripts {
                     nameof(StopInputProcessing)
                 );
 
-                GetNode($"{_saveButton}/FileDialog").Connect(
+                _main.GetNode($"{_saveButton}/FileDialog").Connect(
                     "popup_hide",
                     this,
                     nameof(StartInputProcessing)
@@ -171,97 +170,97 @@ namespace ProceduralGeneration.Scripts {
                     nameof(StartInputProcessing)
                 );
 
-                GetNode($"{_persistenceContainer}/PersistenceSlider").Connect(
+                _main.GetNode($"{_persistenceContainer}/PersistenceSlider").Connect(
                     "value_changed",
                     this,
                     nameof(_on_PersistenceSlider_value_changed)
                 );
 
-                GetNode($"{_octavesContainer}/OctavesSlider").Connect(
+                _main.GetNode($"{_octavesContainer}/OctavesSlider").Connect(
                     "value_changed",
                     this,
                     nameof(_on_OctavesSlider_value_changed)
                 );
 
-                GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
+                _main.GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
                     "text_changed",
                     _mapGen,
                     nameof(_mapGen._on_SeedInput_text_changed)
                 );
 
-                GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
+                _main.GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
                     "focus_entered",
                     this,
                     nameof(StopInputProcessing)
                 );
 
-                GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
+                _main.GetNode($"{MapMenuConfig}/MapParametersGrid/SeedInput").Connect(
                     "focus_exited",
                     this,
                     nameof(StartInputProcessing)
                 );
 
-                GetNode(_genMapButton).Connect(
+                _main.GetNode(_genMapButton).Connect(
                     "pressed",
                     _main,
                     nameof(_main.GenerateMap)
                 );
 
-                GetNode(_waterVisibility).Connect(
+                _main.GetNode(_waterVisibility).Connect(
                     "toggled",
                     this,
                     nameof(_on_ShowWaterCheckBox_toggled)
                 );
 
-                GetNode($"{AdvancedMenuConfig}/WaterSlider").Connect(
+                _main.GetNode($"{AdvancedMenuConfig}/WaterSlider").Connect(
                     "value_changed",
                     this,
                     nameof(_on_WaterSlider_value_changed)
                 );
 
-                GetNode(_clearButton).Connect(
+                _main.GetNode(_clearButton).Connect(
                     "pressed",
                     this,
                     nameof(_on_ClearButton_pressed)
                 );
 
-                GetNode(_exitButton).Connect(
+                _main.GetNode(_exitButton).Connect(
                     "pressed",
                     this,
                     nameof(_on_ExitButton_pressed)
                 );
 
-                GetNode(_openSavesFolderButton).Connect(
+                _main.GetNode(_openSavesFolderButton).Connect(
                     "pressed",
                     this,
                     nameof(_on_SavesFolderButton_pressed)
                 );
 
-                GetNode(_snowButtonPath).Connect(
+                _main.GetNode(_snowButtonPath).Connect(
                     "pressed",
                     this,
                     nameof(_on_SnowButton_pressed)
                 );
 
-                GetNode(_stoneButtonPath).Connect(
+                _main.GetNode(_stoneButtonPath).Connect(
                     "pressed",
                     this,
                     nameof(_on_StoneButton_pressed)
                 );
 
-                GetNode(_grassButtonPath).Connect(
+                _main.GetNode(_grassButtonPath).Connect(
                     "pressed",
                     this,
                     nameof(_on_GrassButton_pressed)
                 );
 
-                GetNode(_sandButtonPath).Connect(
+                _main.GetNode(_sandButtonPath).Connect(
                     "pressed",
                     this,
                     nameof(_on_SandButton_pressed)
                 );
 
-                GetNode(_helpButtonPath).Connect(
+                _main.GetNode(_helpButtonPath).Connect(
                     "pressed",
                     this,
                     nameof(_on_HelpButton_pressed)
@@ -285,67 +284,67 @@ namespace ProceduralGeneration.Scripts {
                     nameof(_on_GrassBorderValue_changed)
                 );
 
-                GetNode(_resetDefaultPath).Connect(
+                _main.GetNode(_resetDefaultPath).Connect(
                     "pressed",
                     this,
                     nameof(_on_ResetToDefaults_pressed)
                 );
 
-                GetNode(_fullscreenPath).Connect(
+                _main.GetNode(_fullscreenPath).Connect(
                     "toggled",
                     this,
                     nameof(_on_FullscreenCheckBox_toggled)
                 );
 
-                GetNode($"{_selectPathContainer}/LogButton").Connect(
+                _main.GetNode($"{_selectPathContainer}/LogButton").Connect(
                     "pressed",
                     this,
                     nameof(_on_LogButton_pressed)
                 );
 
-                GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
+                _main.GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
                     "about_to_show",
                     this,
                     nameof(StopInputProcessing)
                 );
 
-                GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
+                _main.GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
                     "popup_hide",
                     this,
                     nameof(StartInputProcessing)
                 );
 
-                GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
+                _main.GetNode($"{SystemMenuConfig}/LogFileDialog").Connect(
                     "dir_selected",
                     this,
                     nameof(_on_LogPathFileDialog_dir_selected)
                 );
 
-                GetNode($"{_selectPathContainer}/SaveButton").Connect(
+                _main.GetNode($"{_selectPathContainer}/SaveButton").Connect(
                     "pressed",
                     this,
                     nameof(_on_SelectSaveButton_pressed)
                 );
 
-                GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
+                _main.GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
                     "about_to_show",
                     this,
                     nameof(StopInputProcessing)
                 );
 
-                GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
+                _main.GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
                     "popup_hide",
                     this,
                     nameof(StartInputProcessing)
                 );
 
-                GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
+                _main.GetNode($"{SystemMenuConfig}/SavesFileDialog").Connect(
                     "dir_selected",
                     this,
                     nameof(_on_SavesFileDialog_dir_selected)
                 );
 
-                GetNode(_noiseMinimap).Connect(
+                _main.GetNode(_noiseMinimap).Connect(
                     "toggled",
                     this,
                     nameof(_on_ShowNoisePreviewCheckBox_toggled)
@@ -362,13 +361,13 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_SaveButton_pressed() {
-            var fd = GetNode<FileDialog>($"{_saveButton}/FileDialog");
+            var fd = _main.GetNode<FileDialog>($"{_saveButton}/FileDialog");
             fd.CurrentDir = SPath.GetFullPath(_main.SavesDirectory);
             fd.PopupCentered();
         }
 
         private void _on_SaveFileDialog_file_selected(string path) {
-            var mg   = GetChild<MapGenerator>(0);
+            var mg   = _main.GetChild<MapGenerator>(0);
             var json = JsonConvert.SerializeObject(mg.Config, Formatting.Indented);
 
             if (path.EndsWith("json") && !path.EndsWith(".json")) {
@@ -414,7 +413,7 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_PersistenceSlider_value_changed(float value) {
-            _persistenceValueLabel.Text = value.ToString("N2");
+            _persistenceValueLabel.Text = value.ToString("N2", CultureInfo.InvariantCulture);
         }
 
         private void _on_OctavesSlider_value_changed(float value) {
@@ -436,7 +435,7 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_HelpButton_pressed() {
-            var help = GetNode<AcceptDialog>($"{_helpButtonPath}/AcceptDialog");
+            var help = _main.GetNode<AcceptDialog>($"{_helpButtonPath}/AcceptDialog");
             help.PopupCentered();
         }
 
@@ -570,13 +569,13 @@ namespace ProceduralGeneration.Scripts {
         }
 
         private void _on_LogButton_pressed() {
-            var fd = GetNode<FileDialog>($"{SystemMenuConfig}/LogFileDialog");
+            var fd = _main.GetNode<FileDialog>($"{SystemMenuConfig}/LogFileDialog");
             fd.CurrentDir = SPath.GetFullPath(_main.LogsDirectory);
             fd.PopupCentered();
         }
 
         private void _on_SelectSaveButton_pressed() {
-            var fd = GetNode<FileDialog>($"{SystemMenuConfig}/SavesFileDialog");
+            var fd = _main.GetNode<FileDialog>($"{SystemMenuConfig}/SavesFileDialog");
             fd.CurrentDir = SPath.GetFullPath(_main.SavesDirectory);
             fd.PopupCentered();
         }

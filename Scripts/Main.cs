@@ -66,10 +66,9 @@ namespace ProceduralGeneration.Scripts {
             _appSettings.GetValue(SettingsEntries.LogFolder, out _logsDirectory);
             _appSettings.GetValue(SettingsEntries.SavesFolder, out _savesDirectory);
 
-            OS.WindowMaximized                = true;
-            OS.WindowPosition                 = Vector2.Zero;
-            OS.WindowFullscreen               = fs;
-            _guiHandler.FullscreenCheckButton = fs;
+            OS.WindowMaximized  = true;
+            OS.WindowPosition   = Vector2.Zero;
+            OS.WindowFullscreen = fs;
 
             try {
                 _mapGen  = GetChild<MapGenerator>(0);
@@ -85,6 +84,8 @@ namespace ProceduralGeneration.Scripts {
             }
 
             _guiHandler.Initialize(this, _appSettings, _pointer, _mapGen);
+            _guiHandler.FullscreenCheckButton = fs;
+
 
             try {
                 SDirectory.CreateDirectory(_savesDirectory);
