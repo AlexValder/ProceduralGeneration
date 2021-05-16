@@ -31,8 +31,8 @@ namespace ProceduralGeneration.Scripts {
                 [SettingsEntries.LogFolder]   = SPath.GetFullPath("../Logs/").Replace("\\", "/"),
                 [SettingsEntries.SavesFolder] = SPath.GetFullPath("../Saves/").Replace("\\", "/"),
 #else
-                [SettingsEntries.LogFolder]   = SPath.GetFullPath("./Logs/"),
-                [SettingsEntries.SavesFolder] = SPath.GetFullPath("./Saves/"),
+                [SettingsEntries.LogFolder]   = SPath.GetFullPath("./Logs/").Replace("\\", "/"),
+                [SettingsEntries.SavesFolder] = SPath.GetFullPath("./Saves/").Replace("\\", "/"),
 #endif
             }.ToImmutableDictionary();
 
@@ -74,10 +74,10 @@ namespace ProceduralGeneration.Scripts {
             }
         }
 
-        public void GetValue<T>(in SettingsEntries entry, out T value, in T @default = default) {
+        public void GetValue<T>(in SettingsEntries entry, out T value) {
             var key = StringSettingsEntry(entry);
-            dynamic tmp = _config.GetValue(SECTION, key, DefaultSettings[entry]);
-            value = tmp is T obj ? obj : @default;
+            var tmp = _config.GetValue(SECTION, key, DefaultSettings[entry]);
+            value = tmp is T obj ? obj : default;
         }
 
         public void SetValue(in SettingsEntries entry, in dynamic value) {
