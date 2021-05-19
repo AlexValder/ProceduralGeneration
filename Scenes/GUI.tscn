@@ -52,8 +52,8 @@ __meta__ = {
 
 [node name="TabContainer" type="TabContainer" parent="."]
 modulate = Color( 1, 1, 1, 0.784314 )
-margin_right = 288.0
-margin_bottom = 517.0
+margin_right = 402.0
+margin_bottom = 1004.0
 size_flags_vertical = 3
 custom_fonts/font = ExtResource( 1 )
 __meta__ = {
@@ -61,6 +61,7 @@ __meta__ = {
 }
 
 [node name="Map" type="CenterContainer" parent="TabContainer"]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -69,8 +70,10 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/Map"]
-margin_right = 280.0
-margin_bottom = 473.0
+margin_left = 57.0
+margin_top = 243.0
+margin_right = 337.0
+margin_bottom = 716.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
@@ -98,6 +101,8 @@ columns = 2
 margin_top = 5.0
 margin_right = 130.0
 margin_bottom = 27.0
+hint_tooltip = "Width of the map"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Map Width"
 
@@ -105,6 +110,7 @@ text = "Map Width"
 margin_left = 134.0
 margin_right = 280.0
 margin_bottom = 32.0
+hint_tooltip = "Width of the map"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = 10.0
@@ -116,6 +122,8 @@ align = 1
 margin_top = 41.0
 margin_right = 130.0
 margin_bottom = 63.0
+hint_tooltip = "Height of the map"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Map Height"
 
@@ -124,6 +132,7 @@ margin_left = 134.0
 margin_top = 36.0
 margin_right = 280.0
 margin_bottom = 68.0
+hint_tooltip = "Height of the map"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = 10.0
@@ -135,6 +144,8 @@ align = 1
 margin_top = 77.0
 margin_right = 130.0
 margin_bottom = 99.0
+hint_tooltip = "How many times each square of the map is tesselated"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Tesselation"
 
@@ -143,6 +154,7 @@ margin_left = 134.0
 margin_top = 72.0
 margin_right = 280.0
 margin_bottom = 104.0
+hint_tooltip = "How many times each square of the map is tesselated"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = 1.0
@@ -155,6 +167,8 @@ align = 1
 margin_top = 113.0
 margin_right = 130.0
 margin_bottom = 135.0
+hint_tooltip = "The lowest point of the map"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Min Amplitude"
 
@@ -163,6 +177,7 @@ margin_left = 134.0
 margin_top = 108.0
 margin_right = 280.0
 margin_bottom = 140.0
+hint_tooltip = "The lowest point of the map"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = -10.0
@@ -177,6 +192,8 @@ align = 1
 margin_top = 149.0
 margin_right = 130.0
 margin_bottom = 171.0
+hint_tooltip = "The highest point of the map"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Max Amplitude"
 
@@ -185,6 +202,7 @@ margin_left = 134.0
 margin_top = 144.0
 margin_right = 280.0
 margin_bottom = 176.0
+hint_tooltip = "The highest point of the map"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = -10.0
@@ -199,6 +217,8 @@ align = 1
 margin_top = 185.0
 margin_right = 130.0
 margin_bottom = 207.0
+hint_tooltip = "Scale of the noise"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Scale"
 
@@ -207,6 +227,7 @@ margin_left = 134.0
 margin_top = 180.0
 margin_right = 280.0
 margin_bottom = 212.0
+hint_tooltip = "Scale of the noise"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = 0.01
@@ -222,6 +243,8 @@ prefix = "x"
 margin_top = 216.0
 margin_right = 130.0
 margin_bottom = 238.0
+hint_tooltip = "How much each octave contributes to the map"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Persistence"
 
@@ -230,6 +253,7 @@ margin_left = 134.0
 margin_top = 216.0
 margin_right = 280.0
 margin_bottom = 238.0
+hint_tooltip = "How much each octave contributes to the map"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -258,6 +282,8 @@ valign = 1
 margin_top = 242.0
 margin_right = 130.0
 margin_bottom = 264.0
+hint_tooltip = "How many times noise function is run"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Octaves"
 
@@ -266,6 +292,7 @@ margin_left = 134.0
 margin_top = 242.0
 margin_right = 280.0
 margin_bottom = 264.0
+hint_tooltip = "How many times noise function is run"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -293,6 +320,8 @@ valign = 1
 margin_top = 273.0
 margin_right = 130.0
 margin_bottom = 295.0
+hint_tooltip = "Period of the noise"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Period"
 
@@ -301,6 +330,7 @@ margin_left = 134.0
 margin_top = 268.0
 margin_right = 280.0
 margin_bottom = 300.0
+hint_tooltip = "Period of the noise"
 min_value = 0.01
 max_value = 128.0
 step = 0.01
@@ -315,6 +345,8 @@ __meta__ = {
 margin_top = 309.0
 margin_right = 130.0
 margin_bottom = 331.0
+hint_tooltip = "If higher than 1, then each octaves adds details, otherwise - removes"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Lacunarity"
 
@@ -323,6 +355,7 @@ margin_left = 134.0
 margin_top = 304.0
 margin_right = 280.0
 margin_bottom = 336.0
+hint_tooltip = "If higher than 1, then each octaves adds details, otherwise - removes"
 size_flags_horizontal = 3
 theme = ExtResource( 2 )
 min_value = 0.1
@@ -335,6 +368,8 @@ align = 1
 margin_top = 345.0
 margin_right = 130.0
 margin_bottom = 367.0
+hint_tooltip = "Random seed for the noise"
+mouse_filter = 0
 custom_fonts/font = ExtResource( 1 )
 text = "Random Seed"
 
@@ -343,6 +378,7 @@ margin_left = 134.0
 margin_top = 340.0
 margin_right = 280.0
 margin_bottom = 372.0
+hint_tooltip = "Random seed for the noise"
 size_flags_horizontal = 3
 custom_fonts/font = ExtResource( 1 )
 align = 1
@@ -386,6 +422,7 @@ align = 1
 margin_top = 44.0
 margin_right = 394.0
 margin_bottom = 74.0
+hint_tooltip = "Whether water is visible"
 size_flags_horizontal = 3
 custom_fonts/font = ExtResource( 1 )
 pressed = true
@@ -396,6 +433,7 @@ align = 1
 margin_top = 84.0
 margin_right = 394.0
 margin_bottom = 106.0
+hint_tooltip = "How much the water is transparent"
 text = "Water Transparency:  80%"
 align = 1
 valign = 1
@@ -404,6 +442,7 @@ valign = 1
 margin_top = 116.0
 margin_right = 394.0
 margin_bottom = 132.0
+hint_tooltip = "How much the water is transparent"
 max_value = 1.0
 step = 0.01
 value = 0.8
@@ -444,12 +483,14 @@ material = SubResource( 1 )
 margin_left = 56.0
 margin_right = 108.0
 margin_bottom = 32.0
+hint_tooltip = "Snow color"
 text = "    "
 
 [node name="SnowSpinBox" type="SpinBox" parent="TabContainer/Advanced/VBoxContainer/GridContainer"]
 margin_left = 114.0
 margin_right = 260.0
 margin_bottom = 32.0
+hint_tooltip = "Where snow starts"
 step = 0.01
 value = 1.8
 allow_greater = true
@@ -468,12 +509,14 @@ margin_left = 56.0
 margin_top = 34.0
 margin_right = 108.0
 margin_bottom = 66.0
+hint_tooltip = "Stone color"
 
 [node name="StoneSpinBox" type="SpinBox" parent="TabContainer/Advanced/VBoxContainer/GridContainer"]
 margin_left = 114.0
 margin_top = 34.0
 margin_right = 260.0
 margin_bottom = 66.0
+hint_tooltip = "Where stone starts"
 step = 0.01
 value = 0.7
 allow_greater = true
@@ -492,12 +535,14 @@ margin_left = 56.0
 margin_top = 68.0
 margin_right = 108.0
 margin_bottom = 100.0
+hint_tooltip = "Grass color"
 
 [node name="GrassSpinBox" type="SpinBox" parent="TabContainer/Advanced/VBoxContainer/GridContainer"]
 margin_left = 114.0
 margin_top = 68.0
 margin_right = 260.0
 margin_bottom = 100.0
+hint_tooltip = "Where grass starts"
 step = 0.01
 value = 0.1
 allow_greater = true
@@ -516,11 +561,13 @@ margin_left = 56.0
 margin_top = 102.0
 margin_right = 108.0
 margin_bottom = 130.0
+hint_tooltip = "Sand color"
 
 [node name="ResetButton" type="Button" parent="TabContainer/Advanced/VBoxContainer"]
 margin_top = 340.0
 margin_right = 394.0
 margin_bottom = 368.0
+hint_tooltip = "Restore default values"
 text = "Reset To Defaults"
 
 [node name="HSep2" type="HSeparator" parent="TabContainer/Advanced/VBoxContainer"]
@@ -540,6 +587,7 @@ align = 1
 margin_top = 436.0
 margin_right = 394.0
 margin_bottom = 466.0
+hint_tooltip = "Show noise minimap in left upper corner"
 size_flags_horizontal = 3
 custom_fonts/font = ExtResource( 1 )
 text = "Show Noise Minimap"
@@ -549,6 +597,9 @@ align = 1
 margin_top = 476.0
 margin_right = 394.0
 margin_bottom = 504.0
+hint_tooltip = "Linear - noise is not altered
+Square - noise is corrected by x^2
+Cubic - noise is corrected by x^3"
 align = 1
 
 [node name="ColorPickWindow" type="WindowDialog" parent="TabContainer/Advanced/VBoxContainer"]
@@ -564,10 +615,10 @@ window_title = "Pick A Color"
 [node name="ColorPicker" type="ColorPicker" parent="TabContainer/Advanced/VBoxContainer/ColorPickWindow"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 4.0
-margin_top = 4.0
-margin_right = 2.0
-margin_bottom = 2.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 6.0
+margin_bottom = 6.0
 size_flags_horizontal = 5
 size_flags_vertical = 5
 alignment = 1
@@ -579,7 +630,6 @@ __meta__ = {
 }
 
 [node name="System" type="CenterContainer" parent="TabContainer"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 4.0
@@ -588,10 +638,10 @@ margin_right = -4.0
 margin_bottom = -4.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/System"]
-margin_left = 44.0
-margin_top = 161.0
-margin_right = 236.0
-margin_bottom = 311.0
+margin_left = 101.0
+margin_top = 405.0
+margin_right = 293.0
+margin_bottom = 555.0
 
 [node name="Header1" type="Label" parent="TabContainer/System/VBoxContainer"]
 margin_right = 192.0
@@ -604,6 +654,7 @@ align = 1
 margin_top = 38.0
 margin_right = 192.0
 margin_bottom = 78.0
+hint_tooltip = "Fullscreen on/off"
 text = "Fullscreen"
 align = 1
 
@@ -624,6 +675,7 @@ columns = 2
 margin_top = 3.0
 margin_right = 120.0
 margin_bottom = 25.0
+hint_tooltip = "Select where will be saved by default map files"
 text = "Saves Folder"
 valign = 1
 
@@ -631,12 +683,15 @@ valign = 1
 margin_left = 120.0
 margin_right = 192.0
 margin_bottom = 28.0
+hint_tooltip = "Select where will be saved by default map files"
 text = "Select"
 
 [node name="LogFolderLabel" type="Label" parent="TabContainer/System/VBoxContainer/SelectGrid"]
 margin_top = 35.0
 margin_right = 120.0
 margin_bottom = 57.0
+rect_pivot_offset = Vector2( 905.8, -190 )
+hint_tooltip = "Select where will be saved by default logs"
 text = "Log Folder"
 valign = 1
 
@@ -645,6 +700,8 @@ margin_left = 120.0
 margin_top = 32.0
 margin_right = 192.0
 margin_bottom = 60.0
+rect_pivot_offset = Vector2( 785.8, -187 )
+hint_tooltip = "Select where will be saved by default logs"
 text = "Select"
 
 [node name="Header2" type="Label" parent="TabContainer/System/VBoxContainer"]
@@ -746,9 +803,9 @@ current_dir = "/"
 current_path = "/"
 
 [node name="ControlPanel" type="Panel" parent="."]
-margin_top = 521.0
-margin_right = 288.0
-margin_bottom = 721.0
+margin_top = 1008.0
+margin_right = 402.0
+margin_bottom = 1208.0
 rect_min_size = Vector2( 0, 200 )
 size_flags_horizontal = 3
 
@@ -768,6 +825,7 @@ margin_left = 119.0
 margin_top = 35.0
 margin_right = 221.0
 margin_bottom = 63.0
+hint_tooltip = "Show Controls"
 size_flags_horizontal = 4
 text = "Show Help"
 
@@ -899,6 +957,7 @@ columns = 2
 [node name="GenerateMapButton" type="Button" parent="ControlPanel/VBoxContainer/GridContainer"]
 margin_right = 144.0
 margin_bottom = 31.0
+hint_tooltip = "Generate new map"
 size_flags_horizontal = 5
 size_flags_vertical = 5
 custom_fonts/font = SubResource( 8 )
@@ -912,6 +971,7 @@ __meta__ = {
 margin_left = 148.0
 margin_right = 340.0
 margin_bottom = 31.0
+hint_tooltip = "Save configuration file"
 size_flags_horizontal = 5
 size_flags_vertical = 5
 custom_fonts/font = ExtResource( 1 )
@@ -937,6 +997,7 @@ __meta__ = {
 margin_top = 35.0
 margin_right = 144.0
 margin_bottom = 66.0
+hint_tooltip = "Clear mesh"
 size_flags_horizontal = 5
 size_flags_vertical = 5
 custom_fonts/font = SubResource( 8 )
@@ -951,6 +1012,7 @@ margin_left = 148.0
 margin_top = 35.0
 margin_right = 340.0
 margin_bottom = 66.0
+hint_tooltip = "Load configuration file"
 size_flags_horizontal = 5
 size_flags_vertical = 5
 custom_fonts/font = ExtResource( 1 )
@@ -977,6 +1039,7 @@ __meta__ = {
 margin_top = 70.0
 margin_right = 144.0
 margin_bottom = 98.0
+hint_tooltip = "Quit the program"
 custom_colors/font_color_disabled = Color( 0, 0, 0, 1 )
 custom_colors/font_color = Color( 1, 0, 0, 1 )
 text = "Exit"
@@ -986,6 +1049,7 @@ margin_left = 148.0
 margin_top = 70.0
 margin_right = 340.0
 margin_bottom = 98.0
+hint_tooltip = "Open folder where configuration files are saved"
 size_flags_horizontal = 5
 size_flags_vertical = 5
 custom_fonts/font = ExtResource( 1 )

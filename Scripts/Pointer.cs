@@ -25,7 +25,7 @@ namespace ProceduralGeneration.Scripts {
 
         private static readonly ImmutableDictionary<KeyList, (Direction, int)> CameraRotation =
             new Dictionary<KeyList, (Direction, int)> {
-                [KeyList.Q]  = (Direction.Horizontal, 1),
+                [KeyList.Q] = (Direction.Horizontal, 1),
                 [KeyList.E] = (Direction.Horizontal, -1),
             }.ToImmutableDictionary();
 
