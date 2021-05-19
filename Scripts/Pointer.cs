@@ -13,7 +13,7 @@ namespace ProceduralGeneration.Scripts {
         private const float ZOOM_MIN = 1f;
         private const float ZOOM_MAX = 10f;
         private const float ZOOM_STEP = .5f;
-        private static readonly Vector3 CameraPos = new Vector3(2.2f, 2.2f, 0f);
+        private static readonly Vector3 CameraPos = new Vector3(0.0f, 2.2f, 2.2f);
 
         private static readonly ImmutableDictionary<KeyList, Vector3> Actions =
             new Dictionary<KeyList, Vector3> {
@@ -25,7 +25,7 @@ namespace ProceduralGeneration.Scripts {
 
         private static readonly ImmutableDictionary<KeyList, (Direction, int)> CameraRotation =
             new Dictionary<KeyList, (Direction, int)> {
-                [KeyList.Q]  = (Direction.Horizontal, 1),
+                [KeyList.Q] = (Direction.Horizontal, 1),
                 [KeyList.E] = (Direction.Horizontal, -1),
             }.ToImmutableDictionary();
 
